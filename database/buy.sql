@@ -56,7 +56,8 @@ VALUES(1,2,3,"10001223324aashhhrf00001",1,"张三","13244554455","广东省深�
 CREATE TABLE activities(
 	id INT UNSIGNED NOT NULL COMMENT '活动表id',
     product_id INT UNSIGNED NOT NULL COMMENT '产品id',
-    limt TINYINT NOT NULL COMMENT '是否开启令牌桶限流：0关闭 >0开启limit/s的限流',
+    burst INT NOT NULL COMMENT '令牌桶大小',
+    limt INT NOT NULL COMMENT '是否开启令牌桶限流：0关闭 >0开启limit/s的限流',
     stock MEDIUMINT UNSIGNED NOT NULL COMMENT '产品库存',
     name VARCHAR(20) NOT NULL COMMENT '活动名称',
     sub_name VARCHAR(20) COMMENT '活动副标题',
@@ -68,5 +69,5 @@ CREATE TABLE activities(
    CONSTRAINT p_id2 FOREIGN KEY (product_id) REFERENCES product(id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO activities(id,product_id,limt,stock,name,sub_name,start_time,ground,create_time,update_time)
-VALUES(1,2,10,9999,"抗疫惠民物质派发活动","抗疫专项行动",UTC_DATE(),1,UTC_DATE(),UTC_DATE())
+INSERT INTO activities(id,product_id,burst,limt,stock,name,sub_name,start_time,ground,create_time,update_time)
+VALUES(1,2,10,10,9999,"抗疫惠民物质派发活动","抗疫专项行动",UTC_DATE(),1,UTC_DATE(),UTC_DATE())
