@@ -1,5 +1,10 @@
 # 业务-逻辑
 
+参考文章:
+
+【1】https://github.com/gzc426/Java-Interview/blob/master/%E9%A1%B9%E7%9B%AE%E6%8E%A8%E8%8D%90/%E7%A7%92%E6%9D%80.md
+【2】https://mp.weixin.qq.com/s?__biz=MzU0OTE4MzYzMw==&mid=2247517155&idx=4&sn=bf198afe7d2b498063a0416accffe74f&chksm=fbb10a1dccc6830be5c6b74cbf2de93c9fdd9dd12da4ae1c9b407d35949b92e8656856b7cd16&scene=27
+
 ## 页面静态化
 1.商品静态化。商品的名称、描述、图片等相对固定，把他们做成静态页面，后期可以通过管理端生成，通过nginx等进行动静分离，把对商品页面的刷新和加载和后端服务分离开，由nginx承担。为了保证数据完备性，后端仍要建立完整的商品表，并且也为未来拓展生成静态页面功能作基础。
 2.库存需要发送请求获取，每刷新一次页面获取一次库存，库存请求通过 后端服务 打在redis上，避免访问mysql，以避免磁盘I/O。
@@ -103,3 +108,13 @@ job每隔一段时间去查询消息发送表中状态为待处理的数据，�
 
 
 封装MySQL https://www.liwenzhou.com/posts/Go/mysql/
+
+# 项目架构说明
+
+## 1.不使用orm
+考虑到系统拓展、维护的复杂度，不使用orm
+
+## 2.model 设计
+本项目的 model 设计如下：
+1.接口model围绕接口最终数据设计，不围绕基础表的结构设计。
+2.表的mode围绕基础表的结构设计。

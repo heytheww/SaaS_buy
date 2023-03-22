@@ -1,28 +1,17 @@
 package main
 
 import (
-	"fmt"
-	"io/ioutil"
-	"net/http"
+	"SaaS_buy/service"
+
+	"github.com/gin-gonic/gin"
 )
 
-type MyMux struct {
-	Name string `json:"name"`
-}
-
-func (p *MyMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
-	resp, err := http.Get("http://127.0.0.1:9090")
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	w.Write([]byte(body))
-}
-
 func main() {
-	mux := &MyMux{Name: "liww"}
-	http.ListenAndServe(":9091", mux)
+	router := gin.Default()
+
+	// 简单的路由组: v1
+	v1 := router.Group("/general")
+	{
+		v1.POST("/buy", service.BuyService)
+	}
 }
