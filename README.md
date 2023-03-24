@@ -107,7 +107,7 @@ job每隔一段时间去查询消息发送表中状态为待处理的数据，�
 2.在十几万-几十万流量时，在nginx通过限制连接数来限制流量，即主机流量层（网络模型的网络层）做限流
 
 
-封装MySQL https://www.liwenzhou.com/posts/Go/mysql/
+封装MySQL https://www.liwenzhou.com/posts/Go/mysql/ 
 
 # 项目架构说明
 
