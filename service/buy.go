@@ -2,6 +2,6 @@ package service
 
 import "github.com/gin-gonic/gin"
 
-func BuyService(c *gin.Context) {
+func (s Service) BuyService(c *gin.Context) {
 
 }

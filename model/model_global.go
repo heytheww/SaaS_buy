@@ -8,9 +8,14 @@ type Result struct {
 }
 
 type Data struct {
-	Id string `json:"id"`
+	Id int `json:"id"`
 }
 
 type Data2 struct {
 	Update_Time time.Time `json:"update_time"`
+}
+
+type Resp struct {
+	Data   []any  `json:"data"`
+	Result Result `json:"result"`
 }

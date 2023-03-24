@@ -118,3 +118,15 @@ job每隔一段时间去查询消息发送表中状态为待处理的数据，�
 本项目的 model 设计如下：
 1.接口model围绕接口最终数据设计，不围绕基础表的结构设计。
 2.表的mode围绕基础表的结构设计。
+
+## 3.隔离级别
+本系统设计上，抢购功能尽量采用消息队列，避免并发访问mysql，但是其他模块仍可能并发访问mysql，因此使用 事务隔离级别3。
+
+读未提交 READ UNCOMMITTED | 0 : 存在脏读，不可重复读，幻读的问题。 
+读已提交 READ COMMITTED | 1 : 解决脏读问题，存在不可重复读，幻读的问题。（）
+可重复读 REPEATABLE READ | 2 : 解决脏读，不可重复读的问题，存在幻读（幻行），默认隔离级别，使用MVCC机制（多版本并发控制）实现可重复读。
+序列化 SERIALIZABLE | 3 : 解决脏读，不可重复读，幻读，可保证事务安全，但完全串行执行，性能最低。
+
+## 4.时间处理
+在连接数据库时，开启parseTime=True，自动把datetime转换golang的time.Time。
+https://github.com/go-sql-driver/mysql#columntype-support

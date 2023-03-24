@@ -1,7 +1,5 @@
 package model
 
-import "time"
-
 type ReqAddUser struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -25,7 +23,7 @@ type RespqDelUser struct {
 }
 
 type ReqPatchUser struct {
-	Id string `json:"id"`
+	Id int `json:"id"`
 	ReqAddUser
 }
 
@@ -36,16 +34,4 @@ type RespPatchUser struct {
 
 type ReqGetUser struct {
 	Data
-}
-
-type DataGetUser struct {
-	Id string `json:"id"`
-	ReqAddUser
-	Create_Time time.Time `json:"create_time"`
-	Update_Time time.Time `json:"update_time"`
-}
-
-type RespGetUser struct {
-	Data   DataGetUser `json:"data"`
-	Result Result      `json:"result"`
 }

@@ -25,7 +25,7 @@ type RespqDelProduct struct {
 }
 
 type ReqPatchProduct struct {
-	Id string `json:"id"`
+	Id int `json:"id"`
 	ReqAddProduct
 }
 
@@ -39,10 +39,9 @@ type ReqGetProduct struct {
 }
 
 type DataGetProduct struct {
-	Id string `json:"id"`
-	ReqAddProduct
-	Create_Time time.Time `json:"create_time"`
-	Update_Time time.Time `json:"update_time"`
+	TableProduct
+	Create_Time time.Time `json:"create_Time"`
+	Update_Time time.Time `json:"update_Time"`
 }
 
 type RespGetProduct struct {

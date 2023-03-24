@@ -7,21 +7,13 @@ type ReqGetOrder struct {
 }
 
 type RespGetOrder struct {
-	Id          string    `json:"id"`
-	User_Id     string    `json:"user_id"`
-	Product_Id  string    `json:"product_id"`
-	Pay_Id      string    `json:"pay_id"`
-	Status      int8      `json:"status"`
-	Name        string    `json:"name"`
-	Phone       string    `json:"phone"`
-	Address     string    `json:"address"`
-	Remarks     int       `json:"remarks"`
-	Create_Time time.Time `json:"create_time"`
-	Update_Time time.Time `json:"update_time"`
+	TableOrder
 }
 
 type ReqDelOrder struct {
 	Data
+	Create_Time time.Time `json:"create_Time"`
+	Update_Time time.Time `json:"update_Time"`
 }
 
 type RespDelOrder struct {
