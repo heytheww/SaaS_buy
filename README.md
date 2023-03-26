@@ -1,5 +1,7 @@
 # 业务-逻辑
 
+这是一个业务系统的重构项目，展示了golang的显著优势：1.互联网的C语言 2.简单开发而高效使用  
+
 参考文章:
 
 【1】https://github.com/gzc426/Java-Interview/blob/master/%E9%A1%B9%E7%9B%AE%E6%8E%A8%E8%8D%90/%E7%A7%92%E6%9D%80.md
@@ -130,3 +132,21 @@ job每隔一段时间去查询消息发送表中状态为待处理的数据，�
 ## 4.时间处理
 在连接数据库时，开启parseTime=True，自动把datetime转换golang的time.Time。
 https://github.com/go-sql-driver/mysql#columntype-support
+
+## 5.请求参数的校验
+关于请求参数的校验，参考以下：
+【1】https://gin-gonic.com/zh-cn/docs/examples/binding-and-validation/  
+【2】https://pkg.go.dev/github.com/go-playground/validator/v10#hdr-One_Of  
+【3】https://raw.githubusercontent.com/go-playground/validator/master/_examples/simple/main.go  
+gin集成了很好使用的参数校验，包括缺失校验、类型校验等。另外，服务端只作简单校验，保证基本数据不缺失和类型正确，以减少服务复杂度，降低系统运维、拓展成本，业务校验如手机号校验，由前端来保证。
+
+## 6.分页查询
+分页查询是后台管理最基本的功能，本系统仅作设计，暂不实现。设计如下：  
+请求时，传入以下参数：  
+```
+per 每页记录数
+total 总记录数
+page 当前是第几页
+
+total = page*per
+```

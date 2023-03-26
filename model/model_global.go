@@ -8,14 +8,29 @@ type Result struct {
 }
 
 type Data struct {
-	Id int `json:"id"`
+	Id int `json:"id" binding:"required"`
 }
 
 type Data2 struct {
 	Update_Time time.Time `json:"update_time"`
 }
 
-type Resp struct {
+type RespAdd struct {
+	Data   any    `json:"data"`
+	Result Result `json:"result"`
+}
+
+type RespDel struct {
+	Data   struct{} `json:"data"`
+	Result Result   `json:"result"`
+}
+
+type RespUpdate struct {
+	Data   any    `json:"data"`
+	Result Result `json:"result"`
+}
+
+type RespGet struct {
 	Data   []any  `json:"data"`
 	Result Result `json:"result"`
 }

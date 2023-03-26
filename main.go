@@ -9,6 +9,7 @@ import (
 func main() {
 	router := gin.Default()
 	sv := service.Service{}
+	// 服务初始化
 	sv.InitService()
 
 	// 简单的路由组: v1
@@ -19,8 +20,9 @@ func main() {
 
 	v2 := router.Group("/manage")
 	{
-		// v2.POST("/addUser", service.AddUserService)
 		v2.GET("/getUser", sv.GetserService)
+		v2.POST("/addUser", sv.AddUserService)
+		v2.POST("/delUser", sv.DelUserService)
 	}
 
 	router.Run(":8080")

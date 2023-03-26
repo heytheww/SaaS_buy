@@ -1,3 +1,17 @@
 {
-    "mysql":"root:123456@tcp(127.0.0.1:3306)/wechat_saas?charset=utf8mb4&parseTime=True"
+    "DSN":"root:123456@tcp(127.0.0.1:3306)/wechat_saas?charset=utf8mb4&parseTime=True",
+    "user":{
+        "select":"SELECT id,username,password,phone,role,grade,create_time,update_time FROM user WHERE id=? AND del_flag=1",
+        "insert":"INSERT INTO user(username,password,phone,role,grade,create_time,update_time) VALUES(?,?,?,?,?,?,?)",
+        "delete":"UPDATE user SET user.del_flag=2 WHERE id=?"
+    },
+    "act":{
+
+    },
+    "order":{
+
+    },
+    "product":{
+
+    }
 }
