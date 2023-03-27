@@ -4,8 +4,8 @@
 
 参考文章:
 
-【1】https://github.com/gzc426/Java-Interview/blob/master/%E9%A1%B9%E7%9B%AE%E6%8E%A8%E8%8D%90/%E7%A7%92%E6%9D%80.md
-【2】https://mp.weixin.qq.com/s?__biz=MzU0OTE4MzYzMw==&mid=2247517155&idx=4&sn=bf198afe7d2b498063a0416accffe74f&chksm=fbb10a1dccc6830be5c6b74cbf2de93c9fdd9dd12da4ae1c9b407d35949b92e8656856b7cd16&scene=27
+【1】https://github.com/gzc426/Java-Interview/blob/master/%E9%A1%B9%E7%9B%AE%E6%8E%A8%E8%8D%90/%E7%A7%92%E6%9D%80.md  
+【2】https://mp.weixin.qq.com/s?__biz=MzU0OTE4MzYzMw==&mid=2247517155&idx=4&sn=bf198afe7d2b498063a0416accffe74f&chksm=fbb10a1dccc6830be5c6b74cbf2de93c9fdd9dd12da4ae1c9b407d35949b92e8656856b7cd16&scene=27  
 
 ## 页面静态化
 1.商品静态化。商品的名称、描述、图片等相对固定，把他们做成静态页面，后期可以通过管理端生成，通过nginx等进行动静分离，把对商品页面的刷新和加载和后端服务分离开，由nginx承担。为了保证数据完备性，后端仍要建立完整的商品表，并且也为未来拓展生成静态页面功能作基础。
@@ -134,7 +134,7 @@ job每隔一段时间去查询消息发送表中状态为待处理的数据，�
 https://github.com/go-sql-driver/mysql#columntype-support
 
 ## 5.请求参数的校验
-关于请求参数的校验，参考以下：
+关于请求参数的校验，参考以下：  
 【1】https://gin-gonic.com/zh-cn/docs/examples/binding-and-validation/  
 【2】https://pkg.go.dev/github.com/go-playground/validator/v10#hdr-One_Of  
 【3】https://raw.githubusercontent.com/go-playground/validator/master/_examples/simple/main.go  

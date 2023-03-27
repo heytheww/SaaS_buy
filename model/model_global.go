@@ -26,8 +26,8 @@ type RespDel struct {
 }
 
 type RespUpdate struct {
-	Data   any    `json:"data"`
-	Result Result `json:"result"`
+	Data   struct{} `json:"data"`
+	Result Result   `json:"result"`
 }
 
 type RespGet struct {

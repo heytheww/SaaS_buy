@@ -11,6 +11,59 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+func (s *Service) UpdateUserService(c *gin.Context) {
+	db := s.DB.DBconn
+
+	resp := model.RespUpdate{}
+	resp.Result = model.Result{}
+
+	req := model.ReqUpdateUser{}
+	err := c.ShouldBind(&req)
+	if err != nil {
+		resp.Result.Code = http.StatusBadRequest
+		resp.Result.Message = "parameter error"
+		c.JSON(http.StatusOK, resp)
+		return
+	}
+
+	// 尝试从数据库中查询数据
+	if db != nil {
+
+		sqlStr := s.Sj.User.Update
+		now := time.Now().Format("2006-01-02 15:04:05")
+		err, s, r := s.DB.PrepareURDRows(sqlStr, req.Username, req.Password, req.Phone, req.Role, req.Grade, now, req.Id)
+
+		// 更新失败
+		if err != nil {
+			resp.Result.Code = http.StatusInternalServerError
+			resp.Result.Message = "system error"
+			c.JSON(http.StatusOK, resp)
+			return
+		}
+		defer s.Close()
+
+		var num int64
+		num, err = r.RowsAffected()
+		fmt.Println(num)
+		// 获取更新记录的id失败
+		if err != nil || num == 0 {
+			resp.Result.Code = http.StatusInternalServerError
+			resp.Result.Message = "delete user error"
+			c.JSON(http.StatusOK, resp)
+			return
+		}
+
+		resp.Result = model.Result{Code: http.StatusOK, Message: "success"}
+		c.JSON(http.StatusOK, resp)
+		return
+	}
+
+	// 数据库连接失败
+	resp.Result.Code = http.StatusInternalServerError
+	resp.Result.Message = "system error"
+	c.JSON(http.StatusOK, resp)
+}
+
 func (s *Service) DelUserService(c *gin.Context) {
 	db := s.DB.DBconn
 
@@ -154,7 +207,7 @@ func (s *Service) GetserService(c *gin.Context) {
 
 		slices := make([]any, 0)
 		for r.Next() {
-			err = r.Scan(&tb.Id, &tb.Username, &tb.Password, &tb.Phone, &tb.Role, &tb.Grade, &tb.Create_Time, &tb.Update_Time)
+			err = r.Scan(&tb.Id, &tb.Username, &tb.Password, &tb.Phone, &tb.Role, &tb.Grade, &tb.Del_Flag, &tb.Create_Time, &tb.Update_Time)
 			if err != nil {
 				break
 			}

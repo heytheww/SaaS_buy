@@ -11,6 +11,7 @@ type TableUser struct {
 	Phone       string    `json:"phone"`
 	Role        int8      `json:"role"`
 	Grade       int       `json:"grade"`
+	Del_Flag    int8      `json:"del_flag"`
 	Create_Time time.Time `json:"create_time"`
 	Update_Time time.Time `json:"update_time"`
 }
@@ -22,6 +23,7 @@ type TableProduct struct {
 	Main_Image   string `json:"main_image"`
 	Detail_Image string `json:"detail_image"`
 	Price        int    `json:"price"`
+	Del_Flag     int8   `json:"del_flag"`
 	Create_Time  string `json:"create_time"`
 	Update_Time  string `json:"update_time"`
 }
@@ -36,6 +38,7 @@ type TableOrder struct {
 	Phone       string `json:"phone"`
 	Address     string `json:"address"`
 	Remarks     int    `json:"remarks"`
+	Del_Flag    int8   `json:"del_flag"`
 	Create_Time string `json:"create_time"`
 	Update_Time string `json:"update_time"`
 }
@@ -50,6 +53,7 @@ type TableActivities struct {
 	Sub_Name    string `json:"sub_name"`
 	Start_Time  string `json:"start_time"`
 	Ground      int8   `json:"ground"`
+	Del_Flag    int8   `json:"del_flag"`
 	Create_Time string `json:"create_time"`
 	Update_Time string `json:"update_time"`
 }
