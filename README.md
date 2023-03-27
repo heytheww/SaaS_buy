@@ -150,3 +150,39 @@ page 当前是第几页
 
 total = page*per
 ```
+
+## 7.时间的处理
+注意这样一段程序：
+```
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	location, err := time.LoadLocation("America/Los_Angeles")
+	if err != nil {
+		panic(err)
+	}
+
+	timeInUTC := time.Date(2018, 8, 30, 12, 0, 0, 0, time.UTC)
+	fmt.Println(timeInUTC.In(location))
+}
+
+```
+Output:
+2018-08-30 05:00:00 -0700 PDT
+
+看起开很奇怪的时间格式实际上是通用格式，直接返回给前端即可。
+PDT时间(Pacific Daylight Time)太平洋夏季时间，比UTC早7小时，而北京时间比UTC晚8小时，通常认为GMT和UTC一致，即GMT=UTC+0。
+
+这种时间格式和我们国内应用常见的 2022-01-02 13:55:11 不太一样，后者通过前端JS的Date()或者使用moment.js可以很方便地得到
+```
+new Date("2018-08-30 05:00:00 -0700 PDT")
+Thu Aug 30 2018 20:00:00 GMT+0800 (中国标准时间)
+
+new Date("2023-03-27T16:15:47+08:00")
+Mon Mar 27 2023 16:15:47 GMT+0800 (中国标准时间)
+```
