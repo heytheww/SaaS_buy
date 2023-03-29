@@ -124,10 +124,10 @@ job每隔一段时间去查询消息发送表中状态为待处理的数据，�
 ## 3.隔离级别
 本系统设计上，抢购功能尽量采用消息队列，避免并发访问mysql，但是其他模块仍可能并发访问mysql，因此使用 事务隔离级别3。
 
-读未提交 READ UNCOMMITTED | 0 : 存在脏读，不可重复读，幻读的问题。 
-读已提交 READ COMMITTED | 1 : 解决脏读问题，存在不可重复读，幻读的问题。（）
-可重复读 REPEATABLE READ | 2 : 解决脏读，不可重复读的问题，存在幻读（幻行），默认隔离级别，使用MVCC机制（多版本并发控制）实现可重复读。
-序列化 SERIALIZABLE | 3 : 解决脏读，不可重复读，幻读，可保证事务安全，但完全串行执行，性能最低。
+读未提交 READ UNCOMMITTED | 0 : 存在脏读，不可重复读，幻读的问题。   
+读已提交 READ COMMITTED | 1 : 解决脏读问题，存在不可重复读，幻读（幻行）的问题。  
+可重复读 REPEATABLE READ | 2 : 解决脏读，不可重复读的问题，存在幻读（幻行），默认隔离级别，使用MVCC机制（多版本并发控制）实现可重复读。  
+序列化 SERIALIZABLE | 3 : 解决脏读，不可重复读，幻读，可保证事务安全，但完全串行执行，性能最低。  
 
 ## 4.时间处理
 在连接数据库时，开启parseTime=True，自动把datetime转换golang的time.Time。
@@ -188,7 +188,7 @@ Mon Mar 27 2023 16:15:47 GMT+0800 (中国标准时间)
 ```
 
 ## redis的准备
-参考：
+参考：  
 【1】https://hub.docker.com/_/redis  
 【2】https://redis.uptrace.dev/zh/guide/go-redis.html  
 
@@ -203,10 +203,10 @@ docker run --name buy -d redis redis-server --save 300 1 --loglevel warning
 Redis进程运行日志的级别优先级从高到低分别是warning、notice、verbose、debug，程序会打印高于或等于所设置级别的日志，设置的日志等级越高，打印出来的日志就越少。
 
 运行日志：
-1.warning warning表示只打印非常重要的信息。
-2.notice notice表示打印适当的详细信息，适用于生产环境。
-3.verbose verbose表示记录系统及各事件正常运行状态信息。
-4.debug debug表示记录系统及系统的调试信息。
+1.warning warning表示只打印非常重要的信息。  
+2.notice notice表示打印适当的详细信息，适用于生产环境。  
+3.verbose verbose表示记录系统及各事件正常运行状态信息。  
+4.debug debug表示记录系统及系统的调试信息。  
 
 【注意】
 在开发和测试阶段，应采用本地目录；生成环境，使用创建的卷。
