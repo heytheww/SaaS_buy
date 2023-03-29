@@ -186,3 +186,71 @@ Thu Aug 30 2018 20:00:00 GMT+0800 (中国标准时间)
 new Date("2023-03-27T16:15:47+08:00")
 Mon Mar 27 2023 16:15:47 GMT+0800 (中国标准时间)
 ```
+
+## redis的准备
+参考：
+【1】https://hub.docker.com/_/redis  
+【2】https://redis.uptrace.dev/zh/guide/go-redis.html  
+
+本系统将使用redis的两项功能，一是持久化缓存，二是异步消息队列。
+
+持久化缓存：
+```
+docker run --name buy -d redis redis-server --save 300 1 --loglevel warning
+```
+容器后台运行，每300秒若至少有1次写错字，就进行一次快照保存，只记录warning级别的log
+
+Redis进程运行日志的级别优先级从高到低分别是warning、notice、verbose、debug，程序会打印高于或等于所设置级别的日志，设置的日志等级越高，打印出来的日志就越少。
+
+运行日志：
+1.warning warning表示只打印非常重要的信息。
+2.notice notice表示打印适当的详细信息，适用于生产环境。
+3.verbose verbose表示记录系统及各事件正常运行状态信息。
+4.debug debug表示记录系统及系统的调试信息。
+
+【注意】
+在开发和测试阶段，应采用本地目录；生成环境，使用创建的卷。
+
+```
+#dev
+docker run -v C:/Users/Administrator/Desktop/v:/data --name buy -d redis redis-server --save 300 1 --loglevel warning 
+
+# prod
+docker volume create v1
+docker run -v v1:/data --name buy -d redis redis-server --save 300 1 --loglevel warning 
+```
+
+异步消息队列：
+使用以下命令测试redis.Streams并与本系统行为进行对比，检查正确性
+1.创建stream
+```
+xadd ww * product_id 1001
+xadd ww * product_id 1002
+xadd ww * product_id 1003
+xadd ww * product_id 1004
+xadd ww * product_id 1005
+xadd ww * product_id 1006
+```
+获取stream各消费组的详情
+name表示组名，entries-read表示已被读取数，lag表示未被读取数
+```
+xinfo groups ww 
+```
+
+2.创建消费组
+规定组内消费者从第一条消息开始消费：0-0
+```
+xgroup create ww cg1 0-0
+```
+
+3.组内消费
+消费一条，>指定读取 从未被消费过的消息，0指定当前消费者消费了但未ack的消息
+```
+xreadgroup GROUP cg1 c1 count 1 streams ww >
+xreadgroup GROUP cg1 c1 streams ww 0
+```
+
+4.ack确认消费
+```
+xack ww cg1 1680100221976-0
+```
