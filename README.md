@@ -113,6 +113,9 @@ job每隔一段时间去查询消息发送表中状态为待处理的数据，�
 
 # 项目架构说明
 
+## 系统的数据状态
+本系统状态采用 启动预热 方式设置系统初始数据状态，即启动系统时，马上把数据库相应的数据预热到 redis中，后期将继续拓展 动态配置 方式，即通风后台管理端，把数据提交到数据库，然后马上缓存一份到redis中，让系统数据状态可控。
+
 ## 1.不使用orm
 考虑到系统拓展、维护的复杂度，不使用orm
 
@@ -213,11 +216,11 @@ Redis进程运行日志的级别优先级从高到低分别是warning、notice�
 
 ```
 #dev
-docker run -v C:/Users/Administrator/Desktop/v:/data --name buy -d redis redis-server --save 300 1 --loglevel warning 
+docker run -p 6379:6379 -v C:/Users/Administrator/Desktop/v:/data --name buy -d redis redis-server --save 300 1 --loglevel warning 
 
 # prod
 docker volume create v1
-docker run -v v1:/data --name buy -d redis redis-server --save 300 1 --loglevel warning 
+docker run -p 6379:6379 -v v1:/data --name buy -d redis redis-server --save 300 1 --loglevel warning 
 ```
 
 异步消息队列：
@@ -254,3 +257,33 @@ xreadgroup GROUP cg1 c1 streams ww 0
 ```
 xack ww cg1 1680100221976-0
 ```
+
+## 8.redis扣减库存的设计
+参考：
+【1】https://redis.com/redis-best-practices/lua-helpers/  
+
+```
+HGET stock 1001
+HEXISTS stock 1001
+HSET stock 1001 100
+```
+
+使用lua脚本做到原子操作
+```
+if (redis.call('HEXISTS',KEYS[1],KEYS[2])==1) then
+    local stock = tonumber(redis.call('HGET',KEYS[1],KEYS[2]))
+    if (stock == -1) then -- 不限库存
+        return -1
+    end
+    if (stock > 0) then
+        stock = stock - 1
+        redis.call('HSET',KEYS[1],KEYS[2],stock) -- 扣减库存
+        return stock -- 返回本次消耗库存之后的库存
+    end
+    return 0 -- 库存不足
+end
+return -2 -- 不存在该商品
+```
+
+## 9.限流
+context的超时时长不能小于一个令牌生成的时长，否则请求永远拿不到令牌。

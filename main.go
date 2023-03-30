@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
+
 	router := gin.Default()
 	sv := service.Service{}
 	// 服务初始化
@@ -14,7 +15,7 @@ func main() {
 	// 简单的路由组: v1
 	v1 := router.Group("/general")
 	{
-		v1.POST("/buy", sv.BuyService)
+		v1.POST("/buy", sv.Limiter(), sv.BuyService)
 	}
 
 	v2 := router.Group("/manage")

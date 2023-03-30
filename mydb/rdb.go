@@ -123,3 +123,16 @@ func (db *RDB) GetMsgByGroup(ctx context.Context, mq *MQ, cusName string) (*[]re
 	err := xrg.Err()
 	return &xs, err
 }
+
+// script：lua脚本
+func (db *RDB) RunLua(ctx context.Context, script string, keys []string, values []interface{}) (int, error) {
+
+	deductDock := redis.NewScript(script)
+
+	num, err := deductDock.Run(ctx, db.RDBconn, keys, values...).Int()
+	if err != nil {
+		return 0, err
+	}
+
+	return num, err
+}
