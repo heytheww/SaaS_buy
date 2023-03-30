@@ -3,11 +3,11 @@ package model
 import "time"
 
 type ReqBuy struct {
-	Product_Id int    `json:"product_id"`
-	User_Id    int    `json:"user_id"`
-	Name       string `json:"name"`
-	Phone      string `json:"phone"`
-	Address    string `json:"address"`
+	Product_Id int    `json:"product_id" binding:"required"`
+	User_Id    int    `json:"user_id" binding:"required"`
+	Name       string `json:"name" binding:"required"`
+	Phone      string `json:"phone" binding:"required"`
+	Address    string `json:"address" binding:"required"`
 	Remarks    string `json:"remarks"`
 }
 

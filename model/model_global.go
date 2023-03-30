@@ -15,19 +15,26 @@ type Data2 struct {
 	Update_Time time.Time `json:"update_time"`
 }
 
+type NilData struct{}
+
+type RespBuy struct {
+	Data   any    `json:"data"`
+	Result Result `json:"result"`
+}
+
 type RespAdd struct {
 	Data   any    `json:"data"`
 	Result Result `json:"result"`
 }
 
 type RespDel struct {
-	Data   struct{} `json:"data"`
-	Result Result   `json:"result"`
+	Data   NilData `json:"data"`
+	Result Result  `json:"result"`
 }
 
 type RespUpdate struct {
-	Data   struct{} `json:"data"`
-	Result Result   `json:"result"`
+	Data   NilData `json:"data"`
+	Result Result  `json:"result"`
 }
 
 type RespGet struct {

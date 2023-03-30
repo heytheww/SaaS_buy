@@ -20,7 +20,7 @@ type SqlJSON struct {
 	Product CURD   `json:"product"`
 }
 
-func ReadSqlJson(path string) (any, error) {
+func ReadSqlJson(path string) (*SqlJSON, error) {
 
 	buf, err := os.ReadFile(path)
 	if err != nil {
@@ -33,5 +33,5 @@ func ReadSqlJson(path string) (any, error) {
 		return nil, err
 	}
 
-	return s, nil
+	return &s, nil
 }

@@ -143,6 +143,15 @@ https://github.com/go-sql-driver/mysql#columntype-support
 【3】https://raw.githubusercontent.com/go-playground/validator/master/_examples/simple/main.go  
 gin集成了很好使用的参数校验，包括缺失校验、类型校验等。另外，服务端只作简单校验，保证基本数据不缺失和类型正确，以减少服务复杂度，降低系统运维、拓展成本，业务校验如手机号校验，由前端来保证。
 
+注意，如果一个参数可以为空，那么校验就不要使用required，如
+```
+Remarks  string `json:"remarks" binding:"required"`
+```
+一旦用户向remarks传入""，将会被校验为 remarks未传值而不是 remarks传了值但是是空值，这会使校验失败。因为，应该将这里参数设置为可不传。
+```
+Remarks  string `json:"remarks"`
+```
+
 ## 6.分页查询
 分页查询是后台管理最基本的功能，本系统仅作设计，暂不实现。设计如下：  
 请求时，传入以下参数：  
@@ -286,4 +295,4 @@ return -2 -- 不存在该商品
 ```
 
 ## 9.限流
-context的超时时长不能小于一个令牌生成的时长，否则请求永远拿不到令牌。
+context的超时时长不能小于一个令牌生成的时长，否则，只有一开始的请求可以拿到Bursts个令牌，后来的请求，失败率很高。

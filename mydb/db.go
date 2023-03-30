@@ -8,8 +8,8 @@ import (
 )
 
 type DB struct {
-	DBconn *sql.DB // 数据库连接
-	Sj     SqlJSON // 数据库配置
+	DBconn *sql.DB  // 数据库连接
+	Sj     *SqlJSON // 数据库配置
 }
 
 // 定义一个初始化数据库的函数
@@ -21,7 +21,7 @@ func (db *DB) InitDB() (err error) {
 	if err != nil {
 		return err
 	}
-	db.Sj = j.(SqlJSON)
+	db.Sj = j
 	dsn := db.Sj.DSN
 	// 不会校验账号密码是否正确
 	db.DBconn, err = sql.Open("mysql", dsn)

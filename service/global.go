@@ -2,15 +2,19 @@ package service
 
 import (
 	"SaaS_buy/mydb"
+	"log"
 	"time"
 
 	"golang.org/x/time/rate"
 )
 
 type Service struct {
-	DB *mydb.DB
-	Sj mydb.SqlJSON
-	l  *rate.Limiter
+	DB     *mydb.DB
+	RDB    *mydb.RDB
+	Sj     *mydb.SqlJSON // 执行查询sql
+	l      *rate.Limiter
+	Limit  time.Duration // 每 Limit 时间生成一个令牌
+	Bursts int           // 桶初始大小、突发申请令牌数
 }
 
 func (s *Service) InitService() {
@@ -22,8 +26,18 @@ func (s *Service) InitService() {
 	s.DB = &db
 	s.Sj = db.Sj
 
+	// 创建redis连接
+	rdb := mydb.RDB{}
+	// 初始化redis数据库连接和配置
+	err := rdb.InitRDB()
+	if err != nil {
+		log.Fatal(err)
+	}
+	// 传给service使用
+	s.RDB = &rdb
+
 	// 创建限流器
 	// 每1秒投放一个令牌，桶大小10个，初始大小10个
-	l := rate.NewLimiter(rate.Every(5*time.Second), 5)
+	l := rate.NewLimiter(rate.Every(s.Limit), s.Bursts)
 	s.l = l
 }
