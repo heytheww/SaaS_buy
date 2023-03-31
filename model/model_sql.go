@@ -37,7 +37,7 @@ type TableOrder struct {
 	Name        string `json:"name"`
 	Phone       string `json:"phone"`
 	Address     string `json:"address"`
-	Remarks     int    `json:"remarks"`
+	Remarks     string `json:"remarks"`
 	Del_Flag    int8   `json:"del_flag"`
 	Create_Time string `json:"create_time"`
 	Update_Time string `json:"update_time"`

@@ -19,7 +19,6 @@ type RDB struct {
 
 type MQ struct {
 	MQName        string
-	MaxLen        int64
 	ConsumerGroup string
 }
 
@@ -73,27 +72,23 @@ func (db *RDB) Get(ctx context.Context, key string) (string, error) {
 
 // 使用redis.Stream实现message queue
 // Stream不需要事先创建，redis会在xadd时自动创建
-func (db *RDB) InitMQ(name string, maxLen int64) MQ {
+func (db *RDB) InitMQ(name string) MQ {
 	mq := MQ{
 		MQName: name,
-		MaxLen: maxLen,
 	}
 	return mq
 }
 
-func (db *RDB) AddMsg(ctx context.Context, mq *MQ, key string, value string) {
+func (db *RDB) AddMsg(ctx context.Context, mq *MQ, values ...any) *redis.StringCmd {
 	// *：消息Id自动生成
-	val := []string{key, value}
 	arg := redis.XAddArgs{
 		Stream:     mq.MQName,
 		NoMkStream: false,
-		MaxLen:     mq.MaxLen,
-		// Approx causes MaxLen and MinID to use "~" matcher (instead of "=").
-		Approx: true,
-		ID:     "*",
-		Values: val,
+		ID:         "*",
+		Values:     values,
 	}
-	db.RDBconn.XAdd(ctx, &arg)
+	a := db.RDBconn.XAdd(ctx, &arg)
+	return a
 }
 
 // 创建消费组
@@ -125,7 +120,7 @@ func (db *RDB) GetMsgByGroup(ctx context.Context, mq *MQ, cusName string) (*[]re
 		Consumer: cusName,
 		Streams:  []string{mq.MQName, ">"}, // list of streams and ids, e.g. stream1 stream2 id1 id2
 		Count:    1,
-		Block:    time.Millisecond * 5000,
+		Block:    0, // 堵塞读
 		NoAck:    false,
 	}
 	xrg := db.RDBconn.XReadGroup(ctx, &arg)

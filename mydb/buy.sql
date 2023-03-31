@@ -36,7 +36,7 @@ CREATE TABLE buy_order(
 	id INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '订单表id',
     user_id INT UNSIGNED NOT NULL COMMENT '用户id',
     product_id INT UNSIGNED NOT NULL COMMENT '产品id',
-    pay_id VARCHAR(255) NOT NULL COMMENT '支付凭证：微信',
+    pay_id VARCHAR(255) COMMENT '支付凭证：微信',
     status TINYINT UNSIGNED NOT NULL COMMENT '订单状态：1待支付 3已支付 7取消',
     name VARCHAR(10) NOT NULL COMMENT '收货人',
     phone VARCHAR(11) NOT NULL COMMENT '收货电话',

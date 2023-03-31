@@ -15,6 +15,7 @@ type Service struct {
 	l      *rate.Limiter
 	Limit  time.Duration // 每 Limit 时间生成一个令牌
 	Bursts int           // 桶初始大小、突发申请令牌数
+	MQ     mydb.MQ
 }
 
 func (s *Service) InitService() {
@@ -35,6 +36,10 @@ func (s *Service) InitService() {
 	}
 	// 传给service使用
 	s.RDB = &rdb
+
+	// 创建一个异步消息队列
+	mq := rdb.InitMQ("mq")
+	s.MQ = mq
 
 	// 创建限流器
 	// 每1秒投放一个令牌，桶大小10个，初始大小10个

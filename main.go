@@ -28,6 +28,10 @@ func main() {
 
 	// 服务初始化
 	sv.InitService()
+
+	// 启动订单生成模块
+	go sv.AddOrder()
+
 	// 简单的路由组: v1
 	v1 := router.Group("/general")
 	{

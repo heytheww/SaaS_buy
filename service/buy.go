@@ -63,5 +63,16 @@ func (s Service) BuyService(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 
 	// 3.向异步消息队列推送 订单生成源信息
+	// 限定消息队列1000长度
+	// mq := s.RDB.InitMQ("mq")
+	cmd := s.RDB.AddMsg(c.Request.Context(), &s.MQ,
+		"user_id", strconv.Itoa(req.User_Id),
+		"product_id", strconv.Itoa(req.Product_Id),
+		"name", req.Name,
+		"address", req.Address,
+		"remarks", req.Remarks)
 
+	if cmd.Err() != nil {
+		log.Fatalln(cmd.Err())
+	}
 }

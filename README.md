@@ -203,6 +203,8 @@ Mon Mar 27 2023 16:15:47 GMT+0800 (中国标准时间)
 参考：  
 【1】https://hub.docker.com/_/redis  
 【2】https://redis.uptrace.dev/zh/guide/go-redis.html  
+【3】https://redis.io/commands/xtrim/  
+【4】https://redis.io/commands/xadd/  
 
 本系统将使用redis的两项功能，一是持久化缓存，二是异步消息队列。
 
@@ -235,36 +237,49 @@ docker run -p 6379:6379 -v v1:/data --name buy -d redis redis-server --save 300 
 异步消息队列：
 使用以下命令测试redis.Streams并与本系统行为进行对比，检查正确性
 1.创建stream
+MAXLEN ~ 1000 限定长度约是1000，可能多几十条，或MAXLEN = 1000，精确控制数量，这些策略是插入新的消息，驱逐旧的消息，应用在本系统时，可能会造成消息被驱逐而丢失，进而导致订单生成数据丢失。
+这里存在一个问题，消息队列是存在于内存的，为避免内存消耗过大，应使用XLEN判断异步消息队列长度，若长度超过一定数，则停止插入消息，等待一定时间后，再尝试插入消息。
 ```
-xadd ww * product_id 1001
-xadd ww * product_id 1002
-xadd ww * product_id 1003
-xadd ww * product_id 1004
-xadd ww * product_id 1005
-xadd ww * product_id 1006
+XADD key [NOMKSTREAM] [<MAXLEN | MINID> [= | ~] threshold
+  [LIMIT count]] <* | id> field value [field value ...]
 ```
-获取stream各消费组的详情
-name表示组名，entries-read表示已被读取数，lag表示未被读取数
 ```
-xinfo groups ww 
+XADD ww * user 1001 product_id 1001
+XADD ww * user 1002 product_id 1002
+XADD ww * user 1003 product_id 1003
+XADD ww * user 1004 product_id 1004
+XADD ww * user 1005 product_id 1005
+
+XRANGE ww - + #查看stream
+XLEN ww #查看stream长度
 ```
+
 
 2.创建消费组
 规定组内消费者从第一条消息开始消费：0-0
 ```
-xgroup create ww cg1 0-0
+XGROUP CREATE ww cg1 0-0
+```
+获取stream各消费组的详情
+name表示组名，entries-read表示已被读取数，lag表示未被读取数
+```
+XINFO GROUPS ww 
 ```
 
 3.组内消费
-消费一条，>指定读取 从未被消费过的消息，0指定当前消费者消费了但未ack的消息
 ```
-xreadgroup GROUP cg1 c1 count 1 streams ww >
-xreadgroup GROUP cg1 c1 streams ww 0
+XREADGROUP GROUP group consumer [COUNT count] [BLOCK milliseconds]
+  [NOACK] STREAMS key [key ...] id [id ...]
+```
+一条一条消费，>指定读取 从未被消费过的消息，0指定当前消费者消费了但未ack的消息
+```
+XREADGROUP GROUP cg1 c1 COUNT 1 BLOCK 0 STREAMS ww >
+XREADGROUP GROUP cg1 c1 COUNT 1 BLOCK 0 STREAMS ww 0
 ```
 
 4.ack确认消费
 ```
-xack ww cg1 1680100221976-0
+XACK ww cg1 1680100221976-0
 ```
 
 ## 8.redis扣减库存的设计
@@ -296,3 +311,8 @@ return -2 -- 不存在该商品
 
 ## 9.限流
 context的超时时长不能小于一个令牌生成的时长，否则，只有一开始的请求可以拿到Bursts个令牌，后来的请求，失败率很高。
+
+## 10.异步生成订单
+
+排队号
+订单号
