@@ -44,5 +44,6 @@ func (s *Service) InitService() {
 	// 创建限流器
 	// 每1秒投放一个令牌，桶大小10个，初始大小10个
 	l := rate.NewLimiter(rate.Every(s.Limit), s.Bursts)
+
 	s.l = l
 }

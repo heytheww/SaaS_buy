@@ -3,6 +3,7 @@ package mydb
 import (
 	"context"
 	"errors"
+	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -18,8 +19,9 @@ type RDB struct {
 }
 
 type MQ struct {
-	MQName        string
-	ConsumerGroup string
+	MQName       string
+	CusGroupName string
+	firstId      string
 }
 
 func (db *RDB) InitRDB() (err error) {
@@ -76,6 +78,13 @@ func (db *RDB) InitMQ(name string) MQ {
 	mq := MQ{
 		MQName: name,
 	}
+	// XAdd如果发现stream不存在则会创建
+	a := db.AddMsg(context.Background(), &mq, "init", "init")
+	if a.Err() != nil {
+		log.Fatalln("创建失败：", a.Err())
+	}
+	mq.firstId = a.Val()
+
 	return mq
 }
 
@@ -93,10 +102,11 @@ func (db *RDB) AddMsg(ctx context.Context, mq *MQ, values ...any) *redis.StringC
 
 // 创建消费组
 // 创建成功返回“OK”
-func (db *RDB) GetGroup(ctx context.Context, mq *MQ, name string) error {
-	g := db.RDBconn.XGroupCreate(ctx, mq.MQName, name, "0-0")
+func (db *RDB) CreateGroup(ctx context.Context, mq *MQ, name string) error {
+	// 该组从firstId之后的消息开始消费
+	g := db.RDBconn.XGroupCreate(ctx, mq.MQName, name, mq.firstId)
 	if g.Val() == "OK" {
-		mq.ConsumerGroup = name
+		mq.CusGroupName = name
 		return nil
 	}
 
@@ -116,7 +126,7 @@ func (db *RDB) DestroyGroup(ctx context.Context, mq *MQ, name string) error {
 // 消费组消费
 func (db *RDB) GetMsgByGroup(ctx context.Context, mq *MQ, cusName string) (*[]redis.XStream, error) {
 	arg := redis.XReadGroupArgs{
-		Group:    mq.ConsumerGroup,
+		Group:    mq.CusGroupName,
 		Consumer: cusName,
 		Streams:  []string{mq.MQName, ">"}, // list of streams and ids, e.g. stream1 stream2 id1 id2
 		Count:    1,
@@ -127,6 +137,12 @@ func (db *RDB) GetMsgByGroup(ctx context.Context, mq *MQ, cusName string) (*[]re
 	xs := xrg.Val()
 	err := xrg.Err()
 	return &xs, err
+}
+
+// 确认消费
+func (db *RDB) ACK(ctx context.Context, mq *MQ, id string) *redis.IntCmd {
+	ack := db.RDBconn.XAck(ctx, mq.MQName, mq.CusGroupName, id)
+	return ack
 }
 
 // script：lua脚本

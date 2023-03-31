@@ -3,10 +3,16 @@ package main
 import (
 	"SaaS_buy/model"
 	"SaaS_buy/service"
+	"log"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/sync/errgroup"
+)
+
+var (
+	g errgroup.Group
 )
 
 func main() {
@@ -14,8 +20,9 @@ func main() {
 	router := gin.Default()
 	sv := service.Service{
 		Limit:  1 * time.Second,
-		Bursts: 10,
+		Bursts: 10000,
 	}
+
 	// 限流器响应
 	r := model.Result{
 		Code:    http.StatusBadGateway,
@@ -28,9 +35,6 @@ func main() {
 
 	// 服务初始化
 	sv.InitService()
-
-	// 启动订单生成模块
-	go sv.AddOrder()
 
 	// 简单的路由组: v1
 	v1 := router.Group("/general")
@@ -46,5 +50,25 @@ func main() {
 		v2.PUT("/updateUser", sv.UpdateUserService)
 	}
 
-	router.Run(":8080")
+	server01 := &http.Server{
+		Addr:         ":8080",
+		Handler:      router.Handler(),
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
+
+	g.Go(func() error {
+		// 启动订单生成模块
+		return sv.AddOrder()
+	})
+
+	g.Go(func() error {
+		return server01.ListenAndServe()
+	})
+
+	if err := g.Wait(); err != nil {
+		log.Fatal(err)
+	}
+
+	// router.Run(":8080")
 }

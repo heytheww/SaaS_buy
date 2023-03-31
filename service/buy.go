@@ -26,6 +26,8 @@ func (s Service) BuyService(c *gin.Context) {
 	}
 
 	// 1.执行布隆过滤器，判断商品是否存在
+	// TODO
+
 	// 2.执行redis lua，扣减库存
 
 	// 读取lua脚本
@@ -51,9 +53,13 @@ func (s Service) BuyService(c *gin.Context) {
 	case -2: // 商品不存在
 		resp.Result.Code = http.StatusNotFound
 		resp.Result.Message = "商品不存在"
+		c.JSON(http.StatusOK, resp)
+		return
 	case 0: // 库存不足
 		resp.Result.Code = http.StatusForbidden
 		resp.Result.Message = "库存不足"
+		c.JSON(http.StatusOK, resp)
+		return
 	default: // 扣前库存还剩：
 		// fmt.Println("扣前库存还剩：", num)
 		resp.Result.Code = http.StatusOK
@@ -63,16 +69,16 @@ func (s Service) BuyService(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 
 	// 3.向异步消息队列推送 订单生成源信息
-	// 限定消息队列1000长度
-	// mq := s.RDB.InitMQ("mq")
 	cmd := s.RDB.AddMsg(c.Request.Context(), &s.MQ,
 		"user_id", strconv.Itoa(req.User_Id),
 		"product_id", strconv.Itoa(req.Product_Id),
 		"name", req.Name,
 		"address", req.Address,
+		"phone", req.Phone,
 		"remarks", req.Remarks)
 
 	if cmd.Err() != nil {
 		log.Fatalln(cmd.Err())
 	}
+
 }
