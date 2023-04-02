@@ -325,3 +325,9 @@ rate.Limiter.SetBurst()
 【注意】
 到目前未知，抗住高并发压力的措施有：1.限流器  2.redis缓存库存  3.异步消息队列。
 
+
+## 测试
+### 1.订单数据查看
+```
+SELECT * FROM buy_order WHERE DATE_FORMAT(create_time,'%Y-%m-%d %T') >= '2023-03-31 20:24:37' and DATE_FORMAT(create_time,'%Y-%m-%d %T') <= '2023-04-02 00:00:00'
+```

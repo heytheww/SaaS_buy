@@ -20,7 +20,7 @@ func main() {
 	router := gin.Default()
 	sv := service.Service{
 		Limit:  1 * time.Second,
-		Bursts: 10000,
+		Bursts: 50000,
 	}
 
 	// 限流器响应
