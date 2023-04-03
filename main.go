@@ -20,7 +20,7 @@ func main() {
 	router := gin.Default()
 	sv := service.Service{
 		Limit:  1 * time.Second,
-		Bursts: 30000,
+		Bursts: 100000,
 	}
 
 	// 限流器响应
@@ -51,7 +51,7 @@ func main() {
 	}
 
 	server01 := &http.Server{
-		Addr:         ":1235",
+		Addr:         ":1234",
 		Handler:      router.Handler(),
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,

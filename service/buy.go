@@ -2,6 +2,7 @@ package service
 
 import (
 	"SaaS_buy/model"
+	"context"
 	"log"
 	"net/http"
 	"os"
@@ -41,7 +42,7 @@ func (s Service) BuyService(c *gin.Context) {
 	pId := strconv.Itoa(req.Product_Id)
 	keys := []string{"stock", pId}
 	values := []interface{}{}
-	num, err3 := s.RDB.RunLua(c.Request.Context(), string(buf), keys, values)
+	num, err3 := s.RDB.RunLua(context.Background(), string(buf), keys, values)
 	if err3 != nil {
 		log.Fatalln(err3)
 	}
@@ -69,7 +70,7 @@ func (s Service) BuyService(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 
 	// 3.向异步消息队列推送 订单生成源信息
-	cmd := s.RDB.AddMsg(c.Request.Context(), &s.MQ,
+	cmd := s.RDB.AddMsg(context.Background(), &s.MQ,
 		"user_id", strconv.Itoa(req.User_Id),
 		"product_id", strconv.Itoa(req.Product_Id),
 		"name", req.Name,

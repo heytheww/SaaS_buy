@@ -455,3 +455,5 @@ docker run --network saas_buy -p 3306:3306 --network-alias saas_mysql --name saa
 docker build -t saas/buy:1 -f Dockerfile .
 docker run --network saas_buy --network-alias saas_go -p 1234:1234 --rm --name saas_buy -d saas/buy:1
 ```
+
+注意，在go容器运行后，调用 log.fatal 会导致容器被退出并删除。另外，本容器运行前，保证redis中不存在名为 mq 的stream，否则容器将启动失败。
