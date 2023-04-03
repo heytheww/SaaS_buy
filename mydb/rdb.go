@@ -3,7 +3,6 @@ package mydb
 import (
 	"context"
 	"errors"
-	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -74,18 +73,18 @@ func (db *RDB) Get(ctx context.Context, key string) (string, error) {
 
 // 使用redis.Stream实现message queue
 // Stream不需要事先创建，redis会在xadd时自动创建
-func (db *RDB) InitMQ(name string) MQ {
+func (db *RDB) InitMQ(name string) (error, MQ) {
 	mq := MQ{
 		MQName: name,
 	}
 	// XAdd如果发现stream不存在则会创建
 	a := db.AddMsg(context.Background(), &mq, "init", "init")
 	if a.Err() != nil {
-		log.Fatalln("创建失败：", a.Err())
+		return a.Err(), mq
 	}
 	mq.firstId = a.Val()
 
-	return mq
+	return nil, mq
 }
 
 func (db *RDB) AddMsg(ctx context.Context, mq *MQ, values ...any) *redis.StringCmd {
@@ -106,7 +105,6 @@ func (db *RDB) CreateGroup(ctx context.Context, mq *MQ, name string) error {
 	// 该组从firstId之后的消息开始消费
 	g := db.RDBconn.XGroupCreate(ctx, mq.MQName, name, mq.firstId)
 	if g.Val() == "OK" {
-		mq.CusGroupName = name
 		return nil
 	}
 

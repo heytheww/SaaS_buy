@@ -1,3 +1,5 @@
+CREATE DATABASE IF NOT EXISTS wechat_saas;
+
 USE wechat_saas;
 
 CREATE TABLE user(
@@ -13,9 +15,6 @@ CREATE TABLE user(
     PRIMARY KEY (id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO user(id,username,password,phone,role,grade,create_time,update_time)
-VALUES(1,"zhangsan","123456","13211223366",1,11,UTC_DATE(),UTC_DATE())
-
 CREATE TABLE product(
 	id INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '产品表id',
     name VARCHAR(20) COMMENT '产品名',
@@ -28,9 +27,6 @@ CREATE TABLE product(
     update_time DATETIME NOT NULL COMMENT '数据最近修改时间',
     PRIMARY KEY (id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-INSERT INTO product(id,name,sub_name,main_image,detail_image,price,create_time,update_time)
-VALUES(1,"N95口罩","医用口罩","https://aliyun.com/main_image.jpg","https://aliyun.com/detail_image.jpg",9900,UTC_DATE(),UTC_DATE())
 
 CREATE TABLE buy_order(
 	id INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '订单表id',
@@ -50,12 +46,6 @@ CREATE TABLE buy_order(
     CONSTRAINT p_id FOREIGN KEY (product_id) REFERENCES product(id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO buy_order(id,user_id,product_id,pay_id,status,name,phone,address,
-remarks,create_time,update_time)
-VALUES(1,1,1,"10001223324aashhhrf00001",1,"张三","13244554455","广东省深圳市宝安区123号",
-"",UTC_DATE(),UTC_DATE())
-
-
 CREATE TABLE activities(
 	id INT UNSIGNED NOT NULL COMMENT '活动表id',
     product_id INT UNSIGNED NOT NULL COMMENT '产品id',
@@ -73,5 +63,10 @@ CREATE TABLE activities(
    CONSTRAINT p_id2 FOREIGN KEY (product_id) REFERENCES product(id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO activities(id,product_id,burst,limt,stock,name,sub_name,start_time,ground,create_time,update_time)
-VALUES(1,1,10,10,9999,"抗疫惠民物质派发活动","抗疫专项行动",UTC_DATE(),1,UTC_DATE(),UTC_DATE())
+-- INSERT INTO user(id,username,password,phone,role,grade,create_time,update_time) VALUES(1,"zhangsan","123456","13211223366",1,11,UTC_DATE(),UTC_DATE());
+
+-- INSERT INTO product(id,name,sub_name,main_image,detail_image,price,create_time,update_time) VALUES(1,"N95口罩","医用口罩","https://aliyun.com/main_image.jpg","https://aliyun.com/detail_image.jpg",9900,UTC_DATE(),UTC_DATE());
+
+-- INSERT INTO buy_order(id,user_id,product_id,pay_id,status,name,phone,address,remarks,create_time,update_time) VALUES(1,1,1,"10001223324aashhhrf00001",1,"张三","13244554455","广东省深圳市宝安区123号","",UTC_DATE(),UTC_DATE());
+
+-- INSERT INTO activities(id,product_id,burst,limt,stock,name,sub_name,start_time,ground,create_time,update_time) VALUES(1,1,10,10,9999,"抗疫惠民物质派发活动","抗疫专项行动",UTC_DATE(),1,UTC_DATE(),UTC_DATE());

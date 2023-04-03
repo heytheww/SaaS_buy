@@ -212,7 +212,7 @@ Mon Mar 27 2023 16:15:47 GMT+0800 (中国标准时间)
 ```
 docker run --name buy -d redis redis-server --save 300 1 --loglevel warning
 ```
-容器后台运行，每300秒若至少有1次写错字，就进行一次快照保存，只记录warning级别的log
+容器后台运行，每300秒若至少有1次写操作，就进行一次快照保存，只记录warning级别的log
 
 Redis进程运行日志的级别优先级从高到低分别是warning、notice、verbose、debug，程序会打印高于或等于所设置级别的日志，设置的日志等级越高，打印出来的日志就越少。
 
@@ -326,8 +326,132 @@ rate.Limiter.SetBurst()
 到目前未知，抗住高并发压力的措施有：1.限流器  2.redis缓存库存  3.异步消息队列。
 
 
-## 测试
-### 1.订单数据查看
+
+
+
+# 测试
+## 1.订单数据查看
 ```
 SELECT * FROM buy_order WHERE DATE_FORMAT(create_time,'%Y-%m-%d %T') >= '2023-03-31 20:24:37' and DATE_FORMAT(create_time,'%Y-%m-%d %T') <= '2023-04-02 00:00:00'
+```
+
+
+
+
+
+# 部署
+
+
+
+## 1.docker容器化部署
+参考资料：
+【1】https://www.cnblogs.com/shenh/p/9714547.html  
+【2】https://yeasy.gitbook.io/docker_practice/network/port_mapping  
+
+采用docker容器部署，且不采用多阶段构建容器，而采用多容器单独部署，然后通过 bridge网络 实现容器间通信。这样做的好处是 保持各容器的独立性，在集群部署时，快速切换到k8s中。
+
+修改docker使用国内镜像：
+```
+{
+  "registry-mirrors": [
+    "https://hub-mirror.c.163.com",
+    "https://mirror.baidubce.com"
+  ]
+}
+```
+
+搭建网络
+```
+docker network create -d bridge saas_buy
+docker network ls
+```
+
+
+
+## 2.redis镜像制作--准备redis容器
+参考资料：
+【1】https://hub.docker.com/_/redis  
+【2】https://www.runoob.com/redis/redis-conf.html  
+【3】https://blog.51cto.com/u_12835254/5273384  
+
+编写属于redis的Dockerfile：Dockerfile.redis
+构建时需要指定Dockerfile文件名：-f ../Dockerfile.php 
+
+```
+FROM redis
+COPY redis.conf /usr/local/etc/redis/redis.conf
+EXPOSE 6379
+CMD ["redis-server", "/usr/local/etc/redis/redis.conf"]
+```
+
+redis.conf（CONFIG GET * 查看所有配置项）
+bind 127.0.0.1：这个配置项一般是直接注释掉的，这个配置开启后就只有本机可以连接redis
+```
+port 6379 #Redis 监听端口
+bind 127.0.0.1 #绑定的主机地址
+timeout 0 #不主动关闭连接
+loglevel notice#记录notice级别的日志
+databases 16 #16个数据库
+save 300 1 #每300秒若至少有1次写操作，就进行一次快照保存
+dbfilename dump.rdb #本地数据库（rdb）文件名
+dir ./ #本地数据库（rdb）存放目录
+# requirepass "12345" #数据库密码
+maxclients 128 #设置同一时间最大客户端连接数，默认无限制
+```
+
+```
+docker login -u 用户名 -p 密码
+docker image pull redis
+docker build -t saas/redis:1 -f Dockerfile.redis .
+docker run -p 6379:6379 --name saas_redis --network saas_buy -d  --network-alias saas_redis saas/redis:1
+```
+
+## 3.mysql镜像制作--准备mysql容器
+参考资料：
+【1】https://blog.csdn.net/boling_cavalry/article/details/71055159  
+【2】https://hub.docker.com/_/mysql  
+【3】https://www.cnblogs.com/felordcn/p/12970489.html  
+【4】https://blog.csdn.net/xtjatswc/article/details/109572149  
+【5】https://blog.csdn.net/boling_cavalry/article/details/71055159
+
+-e MYSQL_ROOT_PASSWORD=123456: 设置root用户环境变量=123456
+```
+本地运行MySQL（本项目使用）
+docker run --name saas_mysql -e MYSQL_ROOT_PASSWORD=123456 -d mysql:latest
+
+# 连接到远程MySQL上，-h 机器IP
+docker run -it --network some-network --rm mysql mysql -hsome-mysql -uexample-user -p
+```
+
+容器测试
+```
+mysql -uroot -p
+SHOW databases;
+```
+
+本项目建议部署时，采用更加偷懒的模式，在构建MySQL时就进行建表。
+PS：<<EOF表示后续的输入作为子命令或子Shell的输入，直到遇到EOF为止，再返回到主Shell。
+
+把sql文件放入docker-entrypoint-initdb.d，可以自动初始化数据库（建表）
+
+Dockerfile.mysql
+```
+FROM mysql
+COPY buy.sql /docker-entrypoint-initdb.d/
+```
+
+```
+docker login -u 用户名 -p 密码
+docker image pull mysql
+docker build -t saas/mysql:1 -f Dockerfile.mysql .
+docker run --network saas_buy -p 3306:3306 --network-alias saas_mysql --name saas_mysql -e MYSQL_ROOT_PASSWORD=123456 -d saas/mysql:1
+```
+
+## 4.Go Web APP镜像制作--准备服务
+参考资料：
+【1】https://studygolang.com/articles/9463  
+
+```
+docker build -t saas/buy:1 -f Dockerfile .
+docker run --network saas_buy --network-alias saas_go -p 1234:1234 --rm --name saas_buy -d saas/buy:1
 ```

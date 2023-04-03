@@ -1,5 +1,5 @@
 {
-    "DSN":"root:123456@tcp(127.0.0.1:3306)/wechat_saas?charset=utf8mb4&parseTime=True&loc=Local",
+    "DSN":"root:123456@tcp(saas_mysql:3306)/wechat_saas?charset=utf8mb4&parseTime=True&loc=Local",
     "user":{
         "select":"SELECT id,username,password,phone,role,grade,del_flag,create_time,update_time FROM user WHERE id=? AND del_flag=1",
         "insert":"INSERT INTO user(username,password,phone,role,grade,create_time,update_time) VALUES(?,?,?,?,?,?,?)",

@@ -18,7 +18,6 @@ func (s Service) AddOrder() error {
 	rdb := s.RDB
 	ctx := context.Background()
 	mq := s.MQ
-	rdb.CreateGroup(ctx, &mq, "cg1")
 
 	// 消息id
 	msgId := ""

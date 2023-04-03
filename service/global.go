@@ -2,6 +2,7 @@ package service
 
 import (
 	"SaaS_buy/mydb"
+	"context"
 	"log"
 	"time"
 
@@ -22,7 +23,10 @@ func (s *Service) InitService() {
 	// 创建mysql连接
 	db := mydb.DB{}
 	// 初始化数据库连接和配置
-	db.InitDB()
+	err := db.InitDB()
+	if err != nil {
+		log.Fatal("mysql init error:", err)
+	}
 	// 传给service使用
 	s.DB = &db
 	s.Sj = db.Sj
@@ -30,16 +34,25 @@ func (s *Service) InitService() {
 	// 创建redis连接
 	rdb := mydb.RDB{}
 	// 初始化redis数据库连接和配置
-	err := rdb.InitRDB()
-	if err != nil {
-		log.Fatal(err)
+	err2 := rdb.InitRDB()
+	if err2 != nil {
+		log.Fatal("redis init error:", err2)
 	}
 	// 传给service使用
 	s.RDB = &rdb
 
 	// 创建一个异步消息队列
-	mq := rdb.InitMQ("mq")
+	err3, mq := rdb.InitMQ("mq")
+	if err3 != nil {
+		log.Fatal("redis init mq error:", err3)
+	}
 	s.MQ = mq
+	gName := "cg1"
+	err4 := rdb.CreateGroup(context.Background(), &mq, gName)
+	if err4 != nil {
+		log.Fatal("redis create group error:", err4)
+	}
+	s.MQ.CusGroupName = gName
 
 	// 创建限流器
 	// 每1秒投放一个令牌，桶大小10个，初始大小10个
