@@ -66,20 +66,8 @@ func (s Service) BuyService(c *gin.Context) {
 		resp.Result.Code = http.StatusOK
 		resp.Result.Message = "恭喜您，抢购成功！"
 	}
-
 	c.JSON(http.StatusOK, resp)
 
 	// 3.向异步消息队列推送 订单生成源信息
-	cmd := s.RDB.AddMsg(context.Background(), &s.MQ,
-		"user_id", strconv.Itoa(req.User_Id),
-		"product_id", strconv.Itoa(req.Product_Id),
-		"name", req.Name,
-		"address", req.Address,
-		"phone", req.Phone,
-		"remarks", req.Remarks)
-
-	if cmd.Err() != nil {
-		log.Fatalln(cmd.Err())
-	}
 
 }

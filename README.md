@@ -234,53 +234,6 @@ docker volume create v1
 docker run -p 6379:6379 -v v1:/data --name buy -d redis redis-server --save 300 1 --loglevel warning 
 ```
 
-异步消息队列：
-使用以下命令测试redis.Streams并与本系统行为进行对比，检查正确性
-1.创建stream
-MAXLEN ~ 1000 限定长度约是1000，可能多几十条，或MAXLEN = 1000，精确控制数量，这些策略是插入新的消息，驱逐旧的消息，应用在本系统时，可能会造成消息被驱逐而丢失，进而导致订单生成数据丢失。
-这里存在一个问题，消息队列是存在于内存的，为避免内存消耗过大，应使用XLEN判断异步消息队列长度，若长度超过一定数，则停止插入消息，等待一定时间后，再尝试插入消息。
-```
-XADD key [NOMKSTREAM] [<MAXLEN | MINID> [= | ~] threshold
-  [LIMIT count]] <* | id> field value [field value ...]
-```
-```
-XADD ww * user 1001 product_id 1001
-XADD ww * user 1002 product_id 1002
-XADD ww * user 1003 product_id 1003
-XADD ww * user 1004 product_id 1004
-XADD ww * user 1005 product_id 1005
-
-XRANGE ww - + #查看stream
-XLEN ww #查看stream长度
-```
-
-
-2.创建消费组
-规定组内消费者从第一条消息开始消费：0-0
-```
-XGROUP CREATE ww cg1 0-0
-```
-获取stream各消费组的详情
-name表示组名，entries-read表示已被读取数，lag表示未被读取数
-```
-XINFO GROUPS ww 
-```
-
-3.组内消费
-```
-XREADGROUP GROUP group consumer [COUNT count] [BLOCK milliseconds]
-  [NOACK] STREAMS key [key ...] id [id ...]
-```
-一条一条消费，>指定读取 从未被消费过的消息，0指定当前消费者消费了但未ack的消息
-```
-XREADGROUP GROUP cg1 c1 COUNT 1 BLOCK 0 STREAMS ww >
-XREADGROUP GROUP cg1 c1 COUNT 1 BLOCK 0 STREAMS ww 0
-```
-
-4.ack确认消费
-```
-XACK ww cg1 1680100221976-0
-```
 
 ## 8.redis扣减库存的设计
 参考：
@@ -324,6 +277,80 @@ rate.Limiter.SetBurst()
 
 【注意】
 到目前未知，抗住高并发压力的措施有：1.限流器  2.redis缓存库存  3.异步消息队列。
+
+
+## 异步消息队列的演变
+
+### 演变1 -- channel
+使用golang本身 带缓冲区的通道，看起来很适合 异步消息队列，支持先进先出，堵塞读写，内存消耗小，不需要额外部署，和go web应用本身一起打包运行。
+当然，风险就是，如果服务意外退出，这个充当 异步消息队列 功能的通道也会退出，所有的消息都会丢失，且正常运行下还要自己实现一个 消费确认ack机制，但是不需要实现一个消息重发，除非取出否则消息是肯定在 通道内的。还有，要及时清理已消费的消息，保证不会把内存爆掉。
+
+#### 演变2 --redis.Stream
+由于redis实际上是一个黑盒，因此需要 验证性 的操作，保证代码可靠。
+本系统采用的开发方式是，使用以下命令测试redis.Streams并与本系统行为进行对比，检查正确性。
+1.创建stream
+MAXLEN ~ 1000 限定长度约是1000，可能多几十条，或MAXLEN = 1000，精确控制数量。
+```
+XADD key [NOMKSTREAM] [<MAXLEN | MINID> [= | ~] threshold
+  [LIMIT count]] <* | id> field value [field value ...]
+```
+```
+XADD ww MAXLEN ~ 10000 * user 1001 product_id 1001
+XADD ww MAXLEN ~ 10000 * user 1002 product_id 1002
+XADD ww MAXLEN ~ 10000 * user 1003 product_id 1003
+XADD ww MAXLEN ~ 10000 * user 1004 product_id 1004
+XADD ww MAXLEN ~ 10000 * user 1005 product_id 1005
+
+XRANGE ww - + #查看stream
+XLEN ww #查看stream长度
+```
+
+2.创建消费组
+规定组内消费者从第一条消息开始消费：0-0
+```
+XGROUP CREATE ww cg1 0-0
+```
+获取stream各消费组的详情
+name表示组名，entries-read表示已被读取数，lag表示未被读取数
+```
+XINFO GROUPS ww 
+```
+
+3.组内消费
+```
+XREADGROUP GROUP group consumer [COUNT count] [BLOCK milliseconds]
+  [NOACK] STREAMS key [key ...] id [id ...]
+```
+一条一条消费，>指定读取 从未被消费过的消息，0指定当前消费者消费了但未ack的消息
+```
+XREADGROUP GROUP cg1 c1 COUNT 1 BLOCK 0 STREAMS ww >
+XREADGROUP GROUP cg1 c1 COUNT 1 BLOCK 0 STREAMS ww 0
+```
+
+4.ack确认消费
+```
+XACK ww cg1 1680100221976-0
+```
+
+【思考-问题】
+总的来说，redis是内存数据库，快但是代价昂贵。使用 redis.Stream 作 异步消息队列，意味着消息队列是存在于内存的，有爆内存的风险，除非使用MAXLEN，一个办法是使用 MAXLEN ~ 1000 ，不使用 MAXLEN = 1000，因为后者存在性能问题。
+MAXLEN ~ 1000 是插入新的消息，驱逐旧的消息，但是不是精确控制 最长长度就是1000，~表示约等，可能多几十。应用在本系统时，由于无法预估I/O情况，和数据库打交道的 订单生成模块（消费组）无法保证处理速度，如果一些老的消息，因为消费者I/O突然变慢，没来得及消费，就可能被 redis 驱逐而丢失，可是这些消息是未被消费的，于是这个异步消息队列变得不可靠，订单生成数据丢失。
+
+对于redis.Stream，是支持多个消费组来消费，每个组内的消费组虽然有 ack 机制，但是是组内隔离，ack后删除的消息只是消费者的PEL，并不是 redis.Stream ，所以无法通过 ack 机制删除消息。 
+
+一个解决方案是，使用 XLEN 判断异步消息队列长度，若长度超过一定数，则停止插入消息，等待一定时间后，再尝试插入消息，若等待还是超过一定数也会直接插入，若不直接插入，也可以循环等待，在用户请求timeout前返回 抢购失败，这种处理方式要统计 失败率。
+
+
+#### 演变3 --rocketMQ
+使用消息队列的变态之处在于，web服务在把所有订单生成的请求 做成消息发送给消息队列后，web服务甚至就可以下线了，接下来就是 订单处理模块 和 消息队列的事情了。
+
+rocketMQ的基本流程是：生产者--生产--主题--队列--订阅--消费组--消费者--消费
+
+本系统仅是生产订单，不涉及其他多个子系统，所以只需要使用 Normal普通消息，而不需 Transaction事务消息，在消费者方面，SimpleConsumer 就够用了，PushConsumer 高度封装，复杂度高不适用本系统，且SimpleConsumer的重试时间为 消费不可见时间，是固定的，不需要设计复杂的重试时间策略。
+
+日后对接 物流系统、积分系统等，再上 事务消息；对于有顺序要求的业务，使用 基于队列组的 顺序消息 和 已经封装好的 保证消息消费的顺序性 的PushConsumer 完成。
+见：https://rocketmq.apache.org/zh/docs/featureBehavior/03fifomessage
+
 
 
 

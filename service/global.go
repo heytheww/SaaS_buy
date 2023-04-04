@@ -10,13 +10,14 @@ import (
 )
 
 type Service struct {
-	DB     *mydb.DB
-	RDB    *mydb.RDB
-	Sj     *mydb.SqlJSON // 执行查询sql
-	l      *rate.Limiter
-	Limit  time.Duration // 每 Limit 时间生成一个令牌
-	Bursts int           // 桶初始大小、突发申请令牌数
-	MQ     mydb.MQ
+	DB        *mydb.DB
+	RDB       *mydb.RDB
+	Sj        *mydb.SqlJSON // 执行查询sql
+	l         *rate.Limiter
+	Limit     time.Duration // 每 Limit 时间生成一个令牌
+	Bursts    int           // 桶初始大小、突发申请令牌数
+	MaxMsgLen int           // 最大消息长度
+	MQ        mydb.MQ
 }
 
 func (s *Service) InitService() {
@@ -42,7 +43,7 @@ func (s *Service) InitService() {
 	s.RDB = &rdb
 
 	// 创建一个异步消息队列
-	err3, mq := rdb.InitMQ("mq")
+	err3, mq := rdb.InitMQ("mq", s.MaxMsgLen)
 	if err3 != nil {
 		log.Fatal("redis init mq error:", err3)
 	}

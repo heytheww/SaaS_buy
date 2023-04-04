@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"strconv"
 	"time"
 )
@@ -48,14 +47,14 @@ func (s Service) AddOrder() error {
 						id, err := strconv.Atoi(value)
 						if err != nil {
 							return errors.New("user_id Atoi error")
-							// log.Fatalln(errors.New("user_id Atoi error"))
+							// fmt.Println(errors.New("user_id Atoi error"))
 						}
 						order.User_Id = id
 					case "product_id":
 						id, err := strconv.Atoi(value)
 						if err != nil {
 							return errors.New("product_id Atoi error")
-							// log.Fatalln(errors.New("product_id Atoi error"))
+							// fmt.Println(errors.New("product_id Atoi error"))
 						}
 						order.Product_Id = id
 					case "name":
@@ -69,7 +68,7 @@ func (s Service) AddOrder() error {
 					}
 				} else {
 					return errors.New("type assertion not ok")
-					// log.Fatalln(errors.New("type assertion not ok"))
+					// fmt.Println(errors.New("type assertion not ok"))
 				}
 			}
 		}
@@ -85,7 +84,7 @@ func (s Service) AddOrder() error {
 
 			// 插入失败
 			if err != nil {
-				log.Fatalln(err)
+				fmt.Println(err)
 			}
 			defer s.Close()
 

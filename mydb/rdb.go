@@ -21,6 +21,7 @@ type MQ struct {
 	MQName       string
 	CusGroupName string
 	firstId      string
+	MaxMsgLen    int
 }
 
 func (db *RDB) InitRDB() (err error) {
@@ -73,9 +74,10 @@ func (db *RDB) Get(ctx context.Context, key string) (string, error) {
 
 // 使用redis.Stream实现message queue
 // Stream不需要事先创建，redis会在xadd时自动创建
-func (db *RDB) InitMQ(name string) (error, MQ) {
+func (db *RDB) InitMQ(name string, maxMsgLen int) (error, MQ) {
 	mq := MQ{
-		MQName: name,
+		MQName:    name,
+		MaxMsgLen: maxMsgLen,
 	}
 	// XAdd如果发现stream不存在则会创建
 	a := db.AddMsg(context.Background(), &mq, "init", "init")
@@ -94,6 +96,8 @@ func (db *RDB) AddMsg(ctx context.Context, mq *MQ, values ...any) *redis.StringC
 		NoMkStream: false,
 		ID:         "*",
 		Values:     values,
+		Approx:     true, // 长度约等
+		MaxLen:     int64(mq.MaxMsgLen),
 	}
 	a := db.RDBconn.XAdd(ctx, &arg)
 	return a
@@ -109,6 +113,13 @@ func (db *RDB) CreateGroup(ctx context.Context, mq *MQ, name string) error {
 	}
 
 	return g.Err()
+}
+
+// 查看stream的长度
+func (db *RDB) GetMsgsLen(ctx context.Context, mq *MQ) int64 {
+	l := db.RDBconn.XLen(ctx, mq.MQName)
+
+	return l.Val()
 }
 
 // 销毁消费组

@@ -3,6 +3,7 @@ package main
 import (
 	"SaaS_buy/model"
 	"SaaS_buy/service"
+	"SaaS_buy/util"
 	"log"
 	"net/http"
 	"time"
@@ -17,10 +18,16 @@ var (
 
 func main() {
 
+	conf, _err := util.ReadConfigJson()
+	if _err != nil {
+		log.Fatalln(_err)
+	}
+
 	router := gin.Default()
 	sv := service.Service{
-		Limit:  1 * time.Second,
-		Bursts: 100000,
+		Limit:     1 * time.Second,
+		Bursts:    conf.Burst,
+		MaxMsgLen: conf.MsgMaxLen,
 	}
 
 	// 限流器响应
