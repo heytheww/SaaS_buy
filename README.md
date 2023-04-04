@@ -352,7 +352,27 @@ rocketMQ的基本流程是：生产者--生产--主题--队列--订阅--消费�
 见：https://rocketmq.apache.org/zh/docs/featureBehavior/03fifomessage
 
 
+使用docker手动部署RocketMQ如下：
 
+参考资料：
+【1】https://github.com/apache/rocketmq  
+
+1.创建namesrv
+```
+docker image pull apache/rocketmq
+docker run -p 9876:9876 -d --name saas_mqnamesrv apache/rocketmq ./mqnamesrv
+```
+
+
+2.创建Broker.
+只能使用本地目录，无法使用卷，用于存储消息
+```
+docker volume create saas-mq-vol
+docker run -p 10911:10911 -d --name saas_broker -v C:/Users/Administrator/Desktop/v:/home/rocketmq/store apache/rocketmq ./mqbroker -n localhost:9876
+```
+
+【问题】
+经过试验发现，RocketMQ对Go的支持并不好，还在快速迭代器，注意体现在client上，没有比较详尽的资料，examples也与现在的版本对不上。
 
 
 
