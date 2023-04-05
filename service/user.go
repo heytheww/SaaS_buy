@@ -31,7 +31,7 @@ func (s *Service) UpdateUserService(c *gin.Context) {
 
 		sqlStr := s.Sj.User.Update
 		now := time.Now().Format("2006-01-02 15:04:05")
-		err, s, r := s.DB.PrepareURDRows(sqlStr, req.Username, req.Password, req.Phone, req.Role, req.Grade, now, req.Id)
+		err, s, r := s.DB.PrepareURDRows(sqlStr, req.Username, req.Password, req.Role, req.Grade, req.Name, req.Phone, req.Address, now, req.Id)
 
 		// 更新失败
 		if err != nil {
@@ -135,10 +135,8 @@ func (s *Service) AddUserService(c *gin.Context) {
 	if db != nil {
 
 		sqlStr := s.Sj.User.Insert
-		create_time := time.Now().Format("2006-01-02 15:04:05")
-		update_time := create_time
-		err, s, r := s.DB.PrepareURDRows(sqlStr, req.Username, req.Password, req.Phone,
-			req.Role, req.Grade, create_time, update_time)
+		err, s, r := s.DB.PrepareURDRows(sqlStr, req.Username, req.Password, req.Role, req.Grade,
+			req.Name, req.Phone, req.Address)
 
 		// 插入失败
 		if err != nil {
@@ -207,7 +205,7 @@ func (s *Service) GetserService(c *gin.Context) {
 
 		slices := make([]any, 0)
 		for r.Next() {
-			err = r.Scan(&tb.Id, &tb.Username, &tb.Password, &tb.Phone, &tb.Role, &tb.Grade, &tb.Del_Flag, &tb.Create_Time, &tb.Update_Time)
+			err = r.Scan(&tb.Id, &tb.Username, &tb.Password, &tb.Role, &tb.Grade, &tb.Del_Flag, &tb.Name, &tb.Phone, &tb.Address, &tb.Create_Time, &tb.Update_Time)
 			if err != nil {
 				break
 			}

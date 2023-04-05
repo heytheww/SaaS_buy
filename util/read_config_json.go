@@ -7,8 +7,8 @@ import (
 )
 
 type Config struct {
-	Burst     int `json:"burst"`
-	MsgMaxLen int `json:"msg_max_len"`
+	Burst    int    `json:"burst"`
+	AMQP_URL string `json:"amqp_url"`
 }
 
 func ReadConfigJson() (*Config, error) {

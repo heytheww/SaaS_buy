@@ -2,11 +2,10 @@ package service
 
 import (
 	"SaaS_buy/model"
-	"context"
 	"errors"
 	"fmt"
 	"strconv"
-	"time"
+	"strings"
 )
 
 func (s Service) AddOrder() error {
@@ -14,98 +13,76 @@ func (s Service) AddOrder() error {
 
 	// 堵塞读异步消息队列
 	// 消息队列长度1000
-	rdb := s.RDB
-	ctx := context.Background()
-	mq := s.MQ
-
-	// 消息id
-	msgId := ""
+	q := s.Queue
+	ch := s.MQCh
+	db := s.DB.DBconn
 
 	// 无限循环
-	for {
-		xs, err := rdb.GetMsgByGroup(ctx, &mq, "c1")
-		if err != nil {
-			return err
-		}
-		now := time.Now().Format("2006-01-02 15:04:05")
-		order := model.TableOrder{
-			Status:      1,
-			Create_Time: now,
-			Update_Time: now,
-		}
+	msgs, err := ch.Consume(
+		q.Name, // queue
+		"",     // consumer // 消费者id自动生成
+		false,  // auto-ack // 	取消自动确认，尽量少用
+		false,  // exclusive
+		false,  // no-local // 未支持
+		false,  // no-wait  // 不等待服务确认请求，立即开始传送，如果无法消费channel就会报错
+		nil,    // args
+	)
+	failOnError(err, "Failed to register a consumer")
 
-		// 目前只用到一条队列
-		// 组装数据表参数
-		messages := (*xs)[0].Messages
-		for _, v := range messages {
-			msgId = v.ID
-			for key, value := range v.Values {
-				value, ok := value.(string)
-				if ok {
-					switch key {
-					case "user_id":
-						id, err := strconv.Atoi(value)
-						if err != nil {
-							return errors.New("user_id Atoi error")
-							// fmt.Println(errors.New("user_id Atoi error"))
-						}
-						order.User_Id = id
-					case "product_id":
-						id, err := strconv.Atoi(value)
-						if err != nil {
-							return errors.New("product_id Atoi error")
-							// fmt.Println(errors.New("product_id Atoi error"))
-						}
-						order.Product_Id = id
-					case "name":
-						order.Name = value
-					case "phone":
-						order.Phone = value
-					case "address":
-						order.Address = value
-					case "remarks":
-						order.Remarks = value
-					}
-				} else {
-					return errors.New("type assertion not ok")
-					// fmt.Println(errors.New("type assertion not ok"))
+	var waitErr chan error
+
+	go func(waitErr chan error) {
+		for d := range msgs {
+
+			// log.Printf("Received a message: %s", d.Body)
+
+			// now := time.Now().Format("2006-01-02 15:04:05")
+			order := model.TableOrder{
+				Status: 1,
+			}
+			// id
+			ids := strings.Split(string(d.Body), ":")
+			i, _ := strconv.Atoi(ids[0])
+			i2, _ := strconv.Atoi(ids[1])
+			order.User_Id = i
+			order.Product_Id = i2
+			order.Remarks = ids[2]
+
+			// 尝试从数据库中插入数据
+			if db != nil {
+				sqlStr := s.Sj.Order.Insert
+				// time.Sleep(2 * time.Second) // 测试用
+				err, s, r := s.DB.PrepareURDRows(sqlStr, order.User_Id, order.Product_Id, order.Status, order.Remarks)
+
+				// 插入失败
+				if err != nil {
+					fmt.Println(err)
 				}
+				defer s.Close()
+
+				var id int64
+				id, err = r.LastInsertId()
+				// 获取新插入的记录的id失败
+				if err != nil {
+					waitErr <- errors.New("get id error")
+					// fmt.Println(errors.New("get id error").Error())
+				}
+				fmt.Println(id)
+
+				// 单条应答，处理一条，应答一条
+				err2 := d.Ack(false)
+				if err2 != nil {
+					waitErr <- errors.New("ack error")
+				}
+
+			} else {
+				waitErr <- errors.New("nil mysql connection")
+				// fmt.Println(errors.New("nil mysql connection").Error())
 			}
 		}
+	}(waitErr)
 
-		db := s.DB.DBconn
+	_err := <-waitErr
 
-		// 尝试从数据库中插入数据
-		if db != nil {
-			sqlStr := s.Sj.Order.Insert
-			// time.Sleep(2 * time.Second) // 测试用
-			err, s, r := s.DB.PrepareURDRows(sqlStr, order.User_Id, order.Product_Id, order.Status,
-				order.Name, order.Phone, order.Address, order.Remarks, order.Create_Time, order.Update_Time)
-
-			// 插入失败
-			if err != nil {
-				fmt.Println(err)
-			}
-			defer s.Close()
-
-			var id int64
-			id, err = r.LastInsertId()
-			// 获取新插入的记录的id失败
-			if err != nil {
-				return errors.New("get id error")
-				// fmt.Println(errors.New("get id error").Error())
-			}
-
-			// 消息ack这块其实不是最重要的，可以简单处理
-			// 因为读消息时，读取的是未读过的
-			ack := rdb.ACK(ctx, &mq, msgId)
-			if ack.Err() == nil {
-				fmt.Println(id, ack.Err())
-			}
-
-		} else {
-			return errors.New("nil mysql connection")
-			// fmt.Println(errors.New("nil mysql connection").Error())
-		}
-	}
+	return _err
 }

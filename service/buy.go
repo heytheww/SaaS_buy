@@ -10,6 +10,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 func (s Service) BuyService(c *gin.Context) {
@@ -69,5 +70,18 @@ func (s Service) BuyService(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 
 	// 3.向异步消息队列推送 订单生成源信息
+	// 按照用户id:商品id组装成消息
+	body := strconv.Itoa(req.User_Id) + ":" + strconv.Itoa(req.Product_Id) + ":" + req.Remarks
 
+	err = s.MQCh.PublishWithContext(context.Background(),
+		"",
+		s.Queue.Name,
+		false, // mandatory
+		false, // immediate
+		amqp.Publishing{
+			ContentType: "text/plain",
+			Body:        []byte(body),
+		})
+	failOnError(err, "Failed to publish a message")
+	log.Printf("msg have sent：%s\n", body)
 }

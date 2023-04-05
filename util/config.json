@@ -1,4 +1,4 @@
 {
     "burst":50000,
-    "msg_max_len":100
+    "amqp_url":"amqp://saas_mq:123456@localhost:5672/develop"
 }

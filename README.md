@@ -400,7 +400,7 @@ docker exec saas_mq rabbitmq-plugins enable rabbitmq_management
 
 然后，采用最简单的 direct模式 开发就足够了，后期还可以很方便扩展，该 消息队列对Go支持很友好。
 
-
+另外，order表的字段应该少，详情通过id连接其他表，这样可以减少消息队列的消息大小，节省资源。 
 
 
 
@@ -415,8 +415,6 @@ SELECT * FROM buy_order WHERE DATE_FORMAT(create_time,'%Y-%m-%d %T') >= '2023-03
 
 
 # 部署
-
-
 
 ## 1.docker容器化部署
 参考资料：
@@ -508,6 +506,7 @@ SHOW databases;
 PS：<<EOF表示后续的输入作为子命令或子Shell的输入，直到遇到EOF为止，再返回到主Shell。
 
 把sql文件放入docker-entrypoint-initdb.d，可以自动初始化数据库（建表）
+不建议把 CURD 语句一起放进去。
 
 Dockerfile.mysql
 ```

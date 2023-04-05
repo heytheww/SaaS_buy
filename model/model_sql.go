@@ -8,10 +8,12 @@ type TableUser struct {
 	Id          int       `json:"id"`
 	Username    string    `json:"username"`
 	Password    string    `json:"password"`
-	Phone       string    `json:"phone"`
 	Role        int8      `json:"role"`
 	Grade       int       `json:"grade"`
 	Del_Flag    int8      `json:"del_flag"`
+	Name        string    `json:"name"`
+	Phone       string    `json:"phone"`
+	Address     string    `json:"address"`
 	Create_Time time.Time `json:"create_time"`
 	Update_Time time.Time `json:"update_time"`
 }
@@ -34,9 +36,6 @@ type TableOrder struct {
 	Product_Id  int    `json:"product_id"`
 	Pay_Id      string `json:"pay_id"`
 	Status      int8   `json:"status"`
-	Name        string `json:"name"`
-	Phone       string `json:"phone"`
-	Address     string `json:"address"`
 	Remarks     string `json:"remarks"`
 	Del_Flag    int8   `json:"del_flag"`
 	Create_Time string `json:"create_time"`

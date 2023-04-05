@@ -25,9 +25,9 @@ func main() {
 
 	router := gin.Default()
 	sv := service.Service{
-		Limit:     1 * time.Second,
-		Bursts:    conf.Burst,
-		MaxMsgLen: conf.MsgMaxLen,
+		Limit:    1 * time.Second,
+		Bursts:   conf.Burst,
+		AMQP_URL: conf.AMQP_URL,
 	}
 
 	// 限流器响应

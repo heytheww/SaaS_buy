@@ -2,22 +2,24 @@ package service
 
 import (
 	"SaaS_buy/mydb"
-	"context"
 	"log"
 	"time"
 
+	amqp "github.com/rabbitmq/amqp091-go"
 	"golang.org/x/time/rate"
 )
 
 type Service struct {
-	DB        *mydb.DB
-	RDB       *mydb.RDB
-	Sj        *mydb.SqlJSON // 执行查询sql
-	l         *rate.Limiter
-	Limit     time.Duration // 每 Limit 时间生成一个令牌
-	Bursts    int           // 桶初始大小、突发申请令牌数
-	MaxMsgLen int           // 最大消息长度
-	MQ        mydb.MQ
+	DB       *mydb.DB
+	RDB      *mydb.RDB
+	Sj       *mydb.SqlJSON // 执行查询sql
+	l        *rate.Limiter
+	Limit    time.Duration   // 每 Limit 时间生成一个令牌
+	Bursts   int             // 桶初始大小、突发申请令牌数
+	AMQP_URL string          // 消息队列 url
+	amqpConn amqp.Connection // 消息队列的连接
+	MQCh     *amqp.Channel   // 与消息队列通信的通道
+	Queue    *amqp.Queue     // 队列实体
 }
 
 func (s *Service) InitService() {
@@ -25,9 +27,7 @@ func (s *Service) InitService() {
 	db := mydb.DB{}
 	// 初始化数据库连接和配置
 	err := db.InitDB()
-	if err != nil {
-		log.Fatal("mysql init error:", err)
-	}
+	failOnError(err, "mysql init error")
 	// 传给service使用
 	s.DB = &db
 	s.Sj = db.Sj
@@ -35,29 +35,40 @@ func (s *Service) InitService() {
 	// 创建redis连接
 	rdb := mydb.RDB{}
 	// 初始化redis数据库连接和配置
-	err2 := rdb.InitRDB()
-	if err2 != nil {
-		log.Fatal("redis init error:", err2)
-	}
+	err = rdb.InitRDB()
+	failOnError(err, "redis init error")
 	// 传给service使用
 	s.RDB = &rdb
 
 	// 创建一个异步消息队列
-	err3, mq := rdb.InitMQ("mq", s.MaxMsgLen)
-	if err3 != nil {
-		log.Fatal("redis init mq error:", err3)
-	}
-	s.MQ = mq
-	gName := "cg1"
-	err4 := rdb.CreateGroup(context.Background(), &mq, gName)
-	if err4 != nil {
-		log.Fatal("redis create group error:", err4)
-	}
-	s.MQ.CusGroupName = gName
+	conn, err := amqp.Dial(s.AMQP_URL)
+	failOnError(err, "Failed to connect to RabbitMQ")
+	s.amqpConn = *conn
+	// defer conn.Close()
+	ch, err := conn.Channel()
+	failOnError(err, "Failed to open a channel")
+	// defer ch.Close()
+	q, err2 := ch.QueueDeclare(
+		"order",
+		false,
+		false,
+		false,
+		false,
+		nil,
+	)
+	failOnError(err2, "Failed to declare a queue")
+	// 传给service使用
+	s.MQCh = ch
+	s.Queue = &q
 
 	// 创建限流器
 	// 每1秒投放一个令牌，桶大小10个，初始大小10个
 	l := rate.NewLimiter(rate.Every(s.Limit), s.Bursts)
-
 	s.l = l
+}
+
+func failOnError(err error, msg string) {
+	if err != nil {
+		log.Fatalln("%s: %v", msg, err)
+	}
 }

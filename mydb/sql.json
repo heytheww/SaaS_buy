@@ -1,14 +1,14 @@
 {
     "DSN":"root:123456@tcp(localhost:3306)/wechat_saas?charset=utf8mb4&parseTime=True&loc=Local",
     "user":{
-        "select":"SELECT id,username,password,phone,role,grade,del_flag,create_time,update_time FROM user WHERE id=? AND del_flag=1",
-        "insert":"INSERT INTO user(username,password,phone,role,grade,create_time,update_time) VALUES(?,?,?,?,?,?,?)",
-        "update":"UPDATE user SET username=?,password=?,phone=?,role=?,grade=?,update_time=? WHERE id=?",
+        "select":"SELECT id,username,password,role,grade,del_flag,name,phone,address,create_time,update_time FROM user WHERE id=? AND del_flag=1",
+        "insert":"INSERT INTO user(username,password,role,grade,name,phone,address) VALUES(?,?,?,?,?,?,?)",
+        "update":"UPDATE user SET username=?,password=?,role=?,grade=?,name=?,phone=?,address=?,update_time=? WHERE id=?",
         "delete":"UPDATE user SET del_flag=2 WHERE id=?"
     },
     "act":{},
     "order":{
-        "insert":"INSERT INTO buy_order(user_id,product_id,status,name,phone,address,remarks,create_time,update_time) VALUES(?,?,?,?,?,?,?,?,?)"
+        "insert":"INSERT INTO buy_order(user_id,product_id,status,remarks) VALUES(?,?,?,?)"
     },
     "product":{}
 }
