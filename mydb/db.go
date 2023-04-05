@@ -13,7 +13,7 @@ type DB struct {
 }
 
 // 定义一个初始化数据库的函数
-func (db *DB) InitDB() (err error) {
+func (db *DB) InitDB(maxConn int) (err error) {
 	// DSN:Data Source Name
 	pwd, _ := os.Getwd() // 获取当前所在工作目录
 	f_path := filepath.Join(pwd, "mydb", "sql.json")
@@ -34,14 +34,23 @@ func (db *DB) InitDB() (err error) {
 		return err
 	}
 	db.DBconn.SetConnMaxLifetime(0)
-	db.DBconn.SetMaxIdleConns(50)
-	db.DBconn.SetMaxOpenConns(50)
+	db.DBconn.SetMaxIdleConns(maxConn)
+	db.DBconn.SetMaxOpenConns(maxConn)
 	return nil
 }
 
 // CURD：Insert Update Select Delete
 
-func (db *DB) PrepareURDRows(sqlStr string, query ...any) (error, *sql.Stmt, sql.Result) {
+func (db *DB) PrepareURDRows(sqlStr string) (error, *sql.Stmt) {
+	stmt, err := db.DBconn.Prepare(sqlStr)
+	if err != nil {
+		return fmt.Errorf("prepare failed, err:%v\n", err), nil
+	}
+
+	return nil, stmt
+}
+
+func (db *DB) PrepareURDRowsAndExec(sqlStr string, query ...any) (error, *sql.Stmt, sql.Result) {
 	stmt, err := db.DBconn.Prepare(sqlStr)
 	if err != nil {
 		return fmt.Errorf("prepare failed, err:%v\n", err), nil, nil

@@ -11,11 +11,18 @@ import (
 func (s Service) AddOrder() error {
 	fmt.Println("订单生成模块:启动")
 
+	var waitErr chan error
+
 	// 堵塞读异步消息队列
 	// 消息队列长度1000
 	q := s.Queue
 	ch := s.MQCh
 	db := s.DB.DBconn
+
+	sqlStr := s.Sj.Order.Insert
+	err, stmt := s.DB.PrepareURDRows(sqlStr)
+	failOnError(err, "prepare failed, err:")
+	defer stmt.Close()
 
 	// 无限循环
 	msgs, err := ch.Consume(
@@ -29,8 +36,6 @@ func (s Service) AddOrder() error {
 	)
 	failOnError(err, "Failed to register a consumer")
 
-	var waitErr chan error
-
 	go func(waitErr chan error) {
 		for d := range msgs {
 
@@ -40,7 +45,8 @@ func (s Service) AddOrder() error {
 			order := model.TableOrder{
 				Status: 1,
 			}
-			// id
+			// 获取消息的标记
+			// tag:=d.DeliveryTag
 			ids := strings.Split(string(d.Body), ":")
 			i, _ := strconv.Atoi(ids[0])
 			i2, _ := strconv.Atoi(ids[1])
@@ -50,15 +56,17 @@ func (s Service) AddOrder() error {
 
 			// 尝试从数据库中插入数据
 			if db != nil {
-				sqlStr := s.Sj.Order.Insert
-				// time.Sleep(2 * time.Second) // 测试用
-				err, s, r := s.DB.PrepareURDRows(sqlStr, order.User_Id, order.Product_Id, order.Status, order.Remarks)
+
+				r, err := stmt.Exec(order.User_Id, order.Product_Id, order.Status, order.Remarks)
+
+				if err != nil {
+					waitErr <- err
+				}
 
 				// 插入失败
 				if err != nil {
 					fmt.Println(err)
 				}
-				defer s.Close()
 
 				var id int64
 				id, err = r.LastInsertId()

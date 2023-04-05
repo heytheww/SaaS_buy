@@ -9,6 +9,7 @@ import (
 type Config struct {
 	Burst    int    `json:"burst"`
 	AMQP_URL string `json:"amqp_url"`
+	MaxConn  int    `json:"mysql_max_conn"`
 }
 
 func ReadConfigJson() (*Config, error) {

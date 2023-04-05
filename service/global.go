@@ -10,6 +10,7 @@ import (
 )
 
 type Service struct {
+	MaxConn  int // mysql连接池 最大打开连接数、最大空闲连接数
 	DB       *mydb.DB
 	RDB      *mydb.RDB
 	Sj       *mydb.SqlJSON // 执行查询sql
@@ -26,7 +27,7 @@ func (s *Service) InitService() {
 	// 创建mysql连接
 	db := mydb.DB{}
 	// 初始化数据库连接和配置
-	err := db.InitDB()
+	err := db.InitDB(s.MaxConn)
 	failOnError(err, "mysql init error")
 	// 传给service使用
 	s.DB = &db

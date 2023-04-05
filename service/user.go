@@ -31,7 +31,7 @@ func (s *Service) UpdateUserService(c *gin.Context) {
 
 		sqlStr := s.Sj.User.Update
 		now := time.Now().Format("2006-01-02 15:04:05")
-		err, s, r := s.DB.PrepareURDRows(sqlStr, req.Username, req.Password, req.Role, req.Grade, req.Name, req.Phone, req.Address, now, req.Id)
+		err, s, r := s.DB.PrepareURDRowsAndExec(sqlStr, req.Username, req.Password, req.Role, req.Grade, req.Name, req.Phone, req.Address, now, req.Id)
 
 		// 更新失败
 		if err != nil {
@@ -83,7 +83,7 @@ func (s *Service) DelUserService(c *gin.Context) {
 	if db != nil {
 
 		sqlStr := s.Sj.User.Delete
-		err, s, r := s.DB.PrepareURDRows(sqlStr, req.Id)
+		err, s, r := s.DB.PrepareURDRowsAndExec(sqlStr, req.Id)
 
 		// 删除失败
 		if err != nil {
@@ -135,7 +135,7 @@ func (s *Service) AddUserService(c *gin.Context) {
 	if db != nil {
 
 		sqlStr := s.Sj.User.Insert
-		err, s, r := s.DB.PrepareURDRows(sqlStr, req.Username, req.Password, req.Role, req.Grade,
+		err, s, r := s.DB.PrepareURDRowsAndExec(sqlStr, req.Username, req.Password, req.Role, req.Grade,
 			req.Name, req.Phone, req.Address)
 
 		// 插入失败

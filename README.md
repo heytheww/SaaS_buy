@@ -402,6 +402,9 @@ docker exec saas_mq rabbitmq-plugins enable rabbitmq_management
 
 另外，order表的字段应该少，详情通过id连接其他表，这样可以减少消息队列的消息大小，节省资源。 
 
+【注意】
+一定要先使用 mysql prepared statement 预处理，得到一个 SQL语法检查和编译 已经做好的PreparedStatement对象，直接填入参数可以获得更好的性能和防止SQL注入（因为不再进行编译）。
+
 
 
 # 测试
@@ -410,7 +413,12 @@ docker exec saas_mq rabbitmq-plugins enable rabbitmq_management
 SELECT * FROM buy_order WHERE DATE_FORMAT(create_time,'%Y-%m-%d %T') >= '2023-03-31 20:24:37' and DATE_FORMAT(create_time,'%Y-%m-%d %T') <= '2023-04-02 00:00:00'
 ```
 
+## 
+JMeter 测试结果如下
 
+生成概要结果 =  50000 in 00:00:41 = 1216.8/s Avg:     2 Min:     1 Max:    95 Err:     0 (0.00%)
+
+TPS=1216.8/s
 
 
 
@@ -518,7 +526,7 @@ COPY buy.sql /docker-entrypoint-initdb.d/
 docker login -u 用户名 -p 密码
 docker image pull mysql
 docker build -t saas/mysql:1 -f Dockerfile.mysql .
-docker run --network saas_buy -p 3306:3306 --network-alias saas_mysql --name saas_mysql -e MYSQL_ROOT_PASSWORD=123456 -d saas/mysql:1
+docker run --network saas_buy -p 3307:3306 --network-alias saas_mysql --name saas_mysql -e MYSQL_ROOT_PASSWORD=123456 -d saas/mysql:1
 ```
 
 ## 4.Go Web APP镜像制作--准备服务
