@@ -280,6 +280,7 @@ rate.Limiter.SetBurst()
 
 
 ## 异步消息队列的演变
+使用 消息队列中间件 的变态之处在于，web服务在把所有订单生成的请求 做成消息发送给消息队列后，web服务甚至就可以下线了，接下来就是 订单处理模块 和 消息队列的事情了。
 
 ### 演变1 -- channel
 使用golang本身 带缓冲区的通道，看起来很适合 异步消息队列，支持先进先出，堵塞读写，内存消耗小，不需要额外部署，和go web应用本身一起打包运行。
@@ -342,7 +343,6 @@ MAXLEN ~ 1000 是插入新的消息，驱逐旧的消息，但是不是精确控
 
 
 #### 演变3 --rocketMQ
-使用消息队列的变态之处在于，web服务在把所有订单生成的请求 做成消息发送给消息队列后，web服务甚至就可以下线了，接下来就是 订单处理模块 和 消息队列的事情了。
 
 rocketMQ的基本流程是：生产者--生产--主题--队列--订阅--消费组--消费者--消费
 
@@ -373,6 +373,34 @@ docker run -p 10911:10911 -d --name saas_broker -v C:/Users/Administrator/Deskto
 
 【问题】
 经过试验发现，RocketMQ对Go的支持并不好，还在快速迭代器，注意体现在client上，没有比较详尽的资料，examples也与现在的版本对不上。
+
+
+
+
+
+### 演变4 ---RabbitMQ
+
+参考：
+【1】https://www.cnblogs.com/feily/p/14207897.html  
+【2】https://hub.docker.com/_/rabbitmq  
+
+推荐：
+消息队列使用端口：5672 管理端口：15672
+```
+docker image pull rabbitmq:3-management
+docker run -d -p 4369:4369 -p 5671:5671 -p 5672:5672 -p 15672:15672 --hostname saas_mq_host --name saas_mq -e RABBITMQ_DEFAULT_USER=admin -e RABBITMQ_DEFAULT_PASS=123456 rabbitmq:3-management
+```
+
+也可以
+```
+docker image pull rabbitmq:latest
+docker run -d -p 4369:4369 -p 5671:5671 -p 5672:5672 -p 15672:15672 --hostname saas_mq_host --name saas_mq rabbitmq:latest 
+docker exec saas_mq rabbitmq-plugins enable rabbitmq_management
+```
+
+然后，采用最简单的 direct模式 开发就足够了，后期还可以很方便扩展，该 消息队列对Go支持很友好。
+
+
 
 
 
