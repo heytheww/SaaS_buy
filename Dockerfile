@@ -1,5 +1,7 @@
-FROM golang:1.18.3 AS build
+FROM golang:1.18.3 AS builder
 #go version
+
+ENV GOOS=linux
 
 WORKDIR /app
 
@@ -11,16 +13,24 @@ COPY . .
 
 # -v print the names of packages as they are compiled.
 # see https://pkg.go.dev/cmd/go
-RUN go build -o /app/buy -v
+# -o [out] [src]
+RUN go build -v -o /app/buy . 
 
-## Deploy
-FROM scratch
+EXPOSE 1234
 
-WORKDIR /app
+# CMD ["/app/buy"]
 
-COPY --from=build /app /app
+# # Deploy
+FROM centos
+
+# 创建文件夹
+WORKDIR /usr/local/bin/app/
+
+COPY --from=builder /app/buy .
+COPY ./mydb/redis.json ./mydb/sql.json ./mydb/stock.lua mydb/
+COPY ./util/config.json util/
 
 EXPOSE 1234
 
 #绝对路径
-CMD ["buy"]
+CMD ["./buy"]
