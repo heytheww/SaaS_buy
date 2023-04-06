@@ -388,13 +388,13 @@ docker run -p 10911:10911 -d --name saas_broker -v C:/Users/Administrator/Deskto
 消息队列使用端口：5672 管理端口：15672
 ```
 docker image pull rabbitmq:3-management
-docker run -d -p 4369:4369 -p 5671:5671 -p 5672:5672 -p 15672:15672 --hostname saas_mq_host --name saas_mq -e RABBITMQ_DEFAULT_USER=admin -e RABBITMQ_DEFAULT_PASS=123456 rabbitmq:3-management
+docker run -d -p 4369:4369 -p 5671:5671 -p 5672:5672 -p 15672:15672 --hostname saas_rabbitmq_host --network saas_buy --network-alias saas_rabbitmq --name saas_rabbitmq -e RABBITMQ_DEFAULT_USER=admin -e RABBITMQ_DEFAULT_PASS=123456 rabbitmq:3-management
 ```
 
 也可以
 ```
 docker image pull rabbitmq:latest
-docker run -d -p 4369:4369 -p 5671:5671 -p 5672:5672 -p 15672:15672 --hostname saas_mq_host --name saas_mq rabbitmq:latest 
+docker run -d -p 4369:4369 -p 5671:5671 -p 5672:5672 -p 15672:15672 --hostname saas_rabbitmq_host --network saas_buy --network-alias saas_rabbitmq --name saas_rabbitmq rabbitmq:latest 
 docker exec saas_mq rabbitmq-plugins enable rabbitmq_management
 ```
 
