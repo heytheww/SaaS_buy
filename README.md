@@ -1,3 +1,28 @@
+# 系统性能（本地预估，不代表生产表现）
+【声明】
+本系统系一个微服务系统，是作为一个大型分布式系统的一部分或称异构子系统而研发的，目前的状态是技术探索落地，追求高效而尽可能地低成本，不追求业务的复杂度。
+
+测试环境：win10，不限网络带宽，CPU/内存：2 core / 2 GiB。
+
+![avatar](./github_readme_images/1.png)
+![avatar](./github_readme_images/2.png)
+![avatar](./github_readme_images/3.png)
+![avatar](./github_readme_images/4.png)
+
+
+## 订单生成耗时
+通过数据库记录的第一条数据和最后一条数据的 create_time 差值计算
+```
+mysql -h localhost -P 3307 -r root -p
+SELECT count(*) FROM buy_order;
+SELECT create_time FROM buy_order ORDER BY id ASC limit 0,1;
+SELECT create_time FROM buy_order ORDER BY id DESC limit 0,1;
+```
+>为7分18秒
+
+![avatar](./github_readme_images/5.png)
+
+
 # 业务-逻辑
 
 这是一个业务系统的重构项目，展示了golang的显著优势：1.互联网的C语言 2.简单开发而高效使用  
