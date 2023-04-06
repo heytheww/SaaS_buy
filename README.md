@@ -539,8 +539,10 @@ docker run --network saas_buy -p 3307:3306 --network-alias saas_mysql --name saa
 【3】https://github.com/docker-library/golang/blob/master/Dockerfile-linux.template
 ```
 docker build -t saas/buy:1 -f Dockerfile .
-docker run --network saas_buy --network-alias saas_go -p 1234:1234 --name saas_buy -it saas/buy:1
+docker run --network saas_buy --network-alias saas_go -p 1234:1234 --name saas_buy -d saas/buy:1
 ```
 
 注意，在go容器运行后，调用 log.fatal 会导致容器被退出并删除。另外，本容器运行前，保证redis中不存在名为 mq 的stream，否则容器将启动失败。
 使用-it及时查看运行错误，保证不出错后，换成-d即可
+
+对rabbitmq，建立一个专属的 virtual host，然后建立一个用户，绑定该virtual host，保证 本系统的消息队列可以独立运行和被监控或权限控制。
