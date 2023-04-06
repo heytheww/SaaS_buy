@@ -4,6 +4,8 @@
 
 测试环境：win10，不限网络带宽，CPU/内存：2 core / 2 GiB。
 
+用户参与抢购，发送请求
+
 ![avatar](./github_readme_images/1.png)
 ![avatar](./github_readme_images/2.png)
 ![avatar](./github_readme_images/3.png)
@@ -577,6 +579,7 @@ docker run --network saas_buy --network-alias saas_go -p 1234:1234 --name saas_b
 
 # TODO List
 
+- [ ] 基于lua+set做防止用户重复下单
 - [ ] 全局统一错误日志处理
 - [ ] 缓存击穿 -- 布隆过滤器
 - [ ] 数据预热
