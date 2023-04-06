@@ -23,7 +23,7 @@ SELECT count(*) FROM buy_order;
 SELECT create_time FROM buy_order ORDER BY id ASC limit 0,1;
 SELECT create_time FROM buy_order ORDER BY id DESC limit 0,1;
 ```
->为7分18秒
+>为17分18秒
 
 ![avatar](./github_readme_images/5.png)
 
