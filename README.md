@@ -571,3 +571,14 @@ docker run --network saas_buy --network-alias saas_go -p 1234:1234 --name saas_b
 使用-it及时查看运行错误，保证不出错后，换成-d即可
 
 对rabbitmq，建立一个专属的 virtual host，然后建立一个用户，绑定该virtual host，保证 本系统的消息队列可以独立运行和被监控或权限控制。
+
+
+<br>
+
+# TODO List
+
+- [ ] 全局统一错误日志处理
+- [ ] 缓存击穿 -- 布隆过滤器
+- [ ] 数据预热
+- [ ] 数据管理功能完善
+- [ ] 单元测试
