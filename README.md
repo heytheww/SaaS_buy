@@ -4,7 +4,10 @@
 
 测试环境：win10，不限网络带宽，CPU/内存：2 core / 2 GiB。
 
-用户参与抢购，发送请求
+## 用户获知结果耗时
+用户参与抢购，发送请求，得到是否抢购成功的响应。
+
+>TPS=419/s
 
 ![avatar](./github_readme_images/1.png)
 ![avatar](./github_readme_images/2.png)
