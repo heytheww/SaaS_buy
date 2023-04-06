@@ -32,5 +32,5 @@ COPY ./util/config.json util/
 
 EXPOSE 1234
 
-#绝对路径
+#相对路径
 CMD ["./buy"]
