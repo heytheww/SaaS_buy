@@ -4,7 +4,6 @@ import (
 	"SaaS_buy/model"
 	"SaaS_buy/service"
 	"SaaS_buy/util"
-	"log"
 	"net/http"
 	"time"
 
@@ -19,9 +18,7 @@ var (
 func main() {
 
 	conf, _err := util.ReadConfigJson()
-	if _err != nil {
-		log.Fatalln(_err)
-	}
+	util.FailOnError(_err, "main:")
 
 	router := gin.Default()
 	sv := service.Service{
@@ -75,7 +72,7 @@ func main() {
 	})
 
 	if err := g.Wait(); err != nil {
-		log.Fatal(err)
+		util.FailOnError(err, "main:")
 	}
 
 	// router.Run(":8080")

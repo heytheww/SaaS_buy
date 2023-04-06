@@ -1,17 +1,26 @@
-FROM golang
+FROM golang:1.18.3 AS build
+#go version
 
-ENV GOPROXY https://goproxy.cn,direct
-WORKDIR /usr/src/app
+WORKDIR /app
 
 # 预下载包文件
 COPY go.mod go.sum ./
-RUN go mod download && go mod verify
+RUN go env -w GOPROXY=https://mirrors.aliyun.com/goproxy/,direct && go mod download && go mod verify
 
 COPY . .
-# -o执行指定输出文件为 main，后面接要编译的包名。
-# 包名是相对于 GOPATH 下的 src 目录开始的。
-RUN go build -v -o /usr/local/bin/app
+
+# -v print the names of packages as they are compiled.
+# see https://pkg.go.dev/cmd/go
+RUN go build -o /app/buy -v
+
+## Deploy
+FROM scratch
+
+WORKDIR /app
+
+COPY --from=build /app /app
 
 EXPOSE 1234
 
-CMD ["app"]
+#绝对路径
+CMD ["buy"]

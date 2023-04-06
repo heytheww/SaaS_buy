@@ -535,10 +535,12 @@ docker run --network saas_buy -p 3307:3306 --network-alias saas_mysql --name saa
 ## 4.Go Web APP镜像制作--准备服务
 参考资料：
 【1】https://studygolang.com/articles/9463  
-
+【2】https://docs.docker.com/language/golang/build-images/  （Dockerfile部分过时）
+【3】https://github.com/docker-library/golang/blob/master/Dockerfile-linux.template
 ```
 docker build -t saas/buy:1 -f Dockerfile .
-docker run --network saas_buy --network-alias saas_go -p 1234:1234 --rm --name saas_buy -d saas/buy:1
+docker run --network saas_buy --network-alias saas_go -p 1234:1234 --name saas_buy -it saas/buy:1
 ```
 
 注意，在go容器运行后，调用 log.fatal 会导致容器被退出并删除。另外，本容器运行前，保证redis中不存在名为 mq 的stream，否则容器将启动失败。
+使用-it及时查看运行错误，保证不出错后，换成-d即可

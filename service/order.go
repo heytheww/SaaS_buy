@@ -2,6 +2,7 @@ package service
 
 import (
 	"SaaS_buy/model"
+	"SaaS_buy/util"
 	"errors"
 	"fmt"
 	"strconv"
@@ -21,7 +22,7 @@ func (s Service) AddOrder() error {
 
 	sqlStr := s.Sj.Order.Insert
 	err, stmt := s.DB.PrepareURDRows(sqlStr)
-	failOnError(err, "prepare failed, err:")
+	util.FailOnError(err, "prepare failed, err:")
 	defer stmt.Close()
 
 	// 无限循环
@@ -34,7 +35,7 @@ func (s Service) AddOrder() error {
 		false,  // no-wait  // 不等待服务确认请求，立即开始传送，如果无法消费channel就会报错
 		nil,    // args
 	)
-	failOnError(err, "Failed to register a consumer")
+	util.FailOnError(err, "Failed to register a consumer")
 
 	go func(waitErr chan error) {
 		for d := range msgs {

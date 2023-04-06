@@ -2,7 +2,7 @@ package service
 
 import (
 	"SaaS_buy/mydb"
-	"log"
+	"SaaS_buy/util"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -28,7 +28,7 @@ func (s *Service) InitService() {
 	db := mydb.DB{}
 	// 初始化数据库连接和配置
 	err := db.InitDB(s.MaxConn)
-	failOnError(err, "mysql init error")
+	util.FailOnError(err, "mysql init error")
 	// 传给service使用
 	s.DB = &db
 	s.Sj = db.Sj
@@ -37,17 +37,17 @@ func (s *Service) InitService() {
 	rdb := mydb.RDB{}
 	// 初始化redis数据库连接和配置
 	err = rdb.InitRDB()
-	failOnError(err, "redis init error")
+	util.FailOnError(err, "redis init error")
 	// 传给service使用
 	s.RDB = &rdb
 
 	// 创建一个异步消息队列
 	conn, err := amqp.Dial(s.AMQP_URL)
-	failOnError(err, "Failed to connect to RabbitMQ")
+	util.FailOnError(err, "Failed to connect to RabbitMQ")
 	s.amqpConn = *conn
 	// defer conn.Close()
 	ch, err := conn.Channel()
-	failOnError(err, "Failed to open a channel")
+	util.FailOnError(err, "Failed to open a channel")
 	// defer ch.Close()
 	q, err2 := ch.QueueDeclare(
 		"order",
@@ -57,7 +57,7 @@ func (s *Service) InitService() {
 		false,
 		nil,
 	)
-	failOnError(err2, "Failed to declare a queue")
+	util.FailOnError(err2, "Failed to declare a queue")
 	// 传给service使用
 	s.MQCh = ch
 	s.Queue = &q
@@ -66,10 +66,4 @@ func (s *Service) InitService() {
 	// 每1秒投放一个令牌，桶大小10个，初始大小10个
 	l := rate.NewLimiter(rate.Every(s.Limit), s.Bursts)
 	s.l = l
-}
-
-func failOnError(err error, msg string) {
-	if err != nil {
-		log.Fatalln("%s: %v", msg, err)
-	}
 }

@@ -2,6 +2,7 @@ package service
 
 import (
 	"SaaS_buy/model"
+	"SaaS_buy/util"
 	"context"
 	"log"
 	"net/http"
@@ -82,6 +83,6 @@ func (s Service) BuyService(c *gin.Context) {
 			ContentType: "text/plain",
 			Body:        []byte(body),
 		})
-	failOnError(err, "Failed to publish a message")
+	util.FailOnError(err, "Failed to publish a message")
 	log.Printf("msg have sent：%s\n", body)
 }
