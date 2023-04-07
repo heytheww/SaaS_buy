@@ -17,6 +17,8 @@ var (
 
 func main() {
 
+	gin.SetMode(gin.ReleaseMode)
+
 	conf, _err := util.ReadConfigJson()
 	util.FailOnError(_err, "main:")
 

@@ -15,7 +15,7 @@ type Config struct {
 func ReadRedisJson() (*Config, error) {
 
 	pwd, _ := os.Getwd() // 获取当前所在工作目录
-	f_path := filepath.Join(pwd, "mydb", "redis.json")
+	f_path := filepath.Join(pwd, "conf", "redis.json")
 
 	buf, err := os.ReadFile(f_path)
 	if err != nil {

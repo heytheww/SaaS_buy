@@ -384,7 +384,7 @@ rocketMQ的基本流程是：生产者--生产--主题--队列--订阅--消费�
 
 使用docker手动部署RocketMQ如下：
 
-参考资料：
+参考资料：  
 【1】https://github.com/apache/rocketmq  
 
 1.创建namesrv
@@ -458,7 +458,7 @@ info clients
 # 部署
 
 ## 1.docker容器化部署
-参考资料：
+参考资料：  
 【1】https://www.cnblogs.com/shenh/p/9714547.html  
 【2】https://yeasy.gitbook.io/docker_practice/network/port_mapping  
 
@@ -483,7 +483,7 @@ docker network ls
 
 
 ## 2.redis镜像制作--准备redis容器
-参考资料：
+参考资料：  
 【1】https://hub.docker.com/_/redis  
 【2】https://www.runoob.com/redis/redis-conf.html  
 【3】https://blog.51cto.com/u_12835254/5273384  
@@ -521,7 +521,7 @@ docker run -p 6379:6379 --name saas_redis --network saas_buy -d  --network-alias
 ```
 
 ## 3.mysql镜像制作--准备mysql容器
-参考资料：
+参考资料：  
 【1】https://blog.csdn.net/boling_cavalry/article/details/71055159  
 【2】https://hub.docker.com/_/mysql  
 【3】https://www.cnblogs.com/felordcn/p/12970489.html  
@@ -563,10 +563,10 @@ docker run --network saas_buy -p 3307:3306 --network-alias saas_mysql --name saa
 ```
 
 ## 4.Go Web APP镜像制作--准备服务
-参考资料：
+参考资料：  
 【1】https://studygolang.com/articles/9463  
-【2】https://docs.docker.com/language/golang/build-images/  （Dockerfile部分过时）
-【3】https://github.com/docker-library/golang/blob/master/Dockerfile-linux.template
+【2】https://docs.docker.com/language/golang/build-images/  （Dockerfile部分过时）  
+【3】https://github.com/docker-library/golang/blob/master/Dockerfile-linux.template  
 ```
 docker build -t saas/buy:1 -f Dockerfile .
 docker run --network saas_buy --network-alias saas_go -p 1234:1234 --name saas_buy -d saas/buy:1
