@@ -27,8 +27,8 @@ FROM centos
 WORKDIR /usr/local/bin/app/
 
 COPY --from=builder /app/buy .
-COPY ./mydb/redis.json ./mydb/sql.json ./mydb/stock.lua mydb/
-COPY ./util/config.json util/
+COPY ./conf/redis.json ./conf/sql.json ./conf/stock.lua conf/
+COPY ./conf/config.json conf/
 
 EXPOSE 1234
 
