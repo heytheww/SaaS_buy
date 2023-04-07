@@ -445,13 +445,13 @@ SELECT * FROM buy_order WHERE DATE_FORMAT(create_time,'%Y-%m-%d %T') >= '2023-03
 
 编写单元测试 go test //TODO
 
+## 2.redis连接数的监控
+
+```
+info clients 
+```
 
 
-## 2.JMeter 测试结果如下
-
-生成概要结果 =  50000 in 00:00:41 = 1216.8/s Avg:     2 Min:     1 Max:    95 Err:     0 (0.00%)
-
-TPS=1216.8/s
 
 
 
@@ -510,7 +510,7 @@ save 300 1 #每300秒若至少有1次写操作，就进行一次快照保存
 dbfilename dump.rdb #本地数据库（rdb）文件名
 dir ./ #本地数据库（rdb）存放目录
 # requirepass "12345" #数据库密码
-maxclients 128 #设置同一时间最大客户端连接数，默认无限制
+# maxclients 128 #设置同一时间最大客户端连接数，默认无限制
 ```
 
 ```

@@ -3,6 +3,7 @@ package mydb
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 )
 
 type CURD struct {
@@ -20,9 +21,11 @@ type SqlJSON struct {
 	Product CURD   `json:"product"`
 }
 
-func ReadSqlJson(path string) (*SqlJSON, error) {
+func ReadSqlJson() (*SqlJSON, error) {
 
-	buf, err := os.ReadFile(path)
+	pwd, _ := os.Getwd() // 获取当前所在工作目录
+	f_path := filepath.Join(pwd, "conf", "sql.json")
+	buf, err := os.ReadFile(f_path)
 	if err != nil {
 		return nil, err
 	}

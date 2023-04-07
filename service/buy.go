@@ -4,6 +4,7 @@ import (
 	"SaaS_buy/model"
 	"SaaS_buy/util"
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -28,14 +29,15 @@ func (s Service) BuyService(c *gin.Context) {
 		return
 	}
 
+	rdb := s.RDBClient
+
 	// 1.执行布隆过滤器，判断商品是否存在
 	// TODO
 
 	// 2.执行redis lua，扣减库存
-
 	// 读取lua脚本
 	pwd, _ := os.Getwd() // 获取当前所在工作目录
-	f_path := filepath.Join(pwd, "mydb", "stock.lua")
+	f_path := filepath.Join(pwd, "conf", "stock.lua")
 	buf, err2 := os.ReadFile(f_path)
 	if err2 != nil {
 		log.Fatalln(err2)
@@ -44,9 +46,13 @@ func (s Service) BuyService(c *gin.Context) {
 	pId := strconv.Itoa(req.Product_Id)
 	keys := []string{"stock", pId}
 	values := []interface{}{}
-	num, err3 := s.RDB.RunLua(context.Background(), string(buf), keys, values)
+	num, err3 := rdb.RunLua(context.Background(), string(buf), keys, values)
 	if err3 != nil {
-		log.Fatalln(err3)
+		fmt.Println(err3)
+		resp.Result.Code = http.StatusBadGateway
+		resp.Result.Message = "请求失败，请重试"
+		c.JSON(http.StatusBadGateway, resp)
+		return
 	}
 
 	switch num {

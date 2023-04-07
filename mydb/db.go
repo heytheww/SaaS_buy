@@ -3,8 +3,6 @@ package mydb
 import (
 	"database/sql"
 	"fmt"
-	"os"
-	"path/filepath"
 )
 
 type DB struct {
@@ -15,9 +13,8 @@ type DB struct {
 // 定义一个初始化数据库的函数
 func (db *DB) InitDB(maxConn int) (err error) {
 	// DSN:Data Source Name
-	pwd, _ := os.Getwd() // 获取当前所在工作目录
-	f_path := filepath.Join(pwd, "mydb", "sql.json")
-	j, err := ReadSqlJson(f_path)
+
+	j, err := ReadSqlJson()
 	if err != nil {
 		return err
 	}

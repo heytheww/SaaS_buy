@@ -14,7 +14,7 @@ type Config struct {
 
 func ReadConfigJson() (*Config, error) {
 	pwd, _ := os.Getwd() // 获取当前所在工作目录
-	f_path := filepath.Join(pwd, "util", "config.json")
+	f_path := filepath.Join(pwd, "conf", "config.json")
 
 	buf, err := os.ReadFile(f_path)
 	if err != nil {

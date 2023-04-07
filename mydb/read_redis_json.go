@@ -3,6 +3,7 @@ package mydb
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 )
 
 type Config struct {
@@ -11,9 +12,12 @@ type Config struct {
 	Password string `json:"password"`
 }
 
-func ReadRedisJson(path string) (*Config, error) {
+func ReadRedisJson() (*Config, error) {
 
-	buf, err := os.ReadFile(path)
+	pwd, _ := os.Getwd() // 获取当前所在工作目录
+	f_path := filepath.Join(pwd, "mydb", "redis.json")
+
+	buf, err := os.ReadFile(f_path)
 	if err != nil {
 		return nil, err
 	}

@@ -1,0 +1,5 @@
+{
+    "burst":50000,
+    "amqp_url":"amqp://user:123456@localhost:5672/develop",
+    "mysql_max_conn":50000
+}

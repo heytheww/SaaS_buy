@@ -3,8 +3,6 @@ package mydb
 import (
 	"context"
 	"errors"
-	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -26,9 +24,7 @@ type MQ struct {
 
 func (db *RDB) InitRDB() (err error) {
 
-	pwd, _ := os.Getwd() // 获取当前所在工作目录
-	f_path := filepath.Join(pwd, "mydb", "redis.json")
-	c, err := ReadRedisJson(f_path)
+	c, err := ReadRedisJson()
 	if err != nil {
 		return err
 	}
@@ -38,7 +34,13 @@ func (db *RDB) InitRDB() (err error) {
 		// 默认没有密码
 		Password: c.Password,
 		// redis默认有16个数据库，命令行通过 select index 切换
-		DB: c.DB_Index,
+		DB:           c.DB_Index,
+		DialTimeout:  6 * time.Second,
+		ReadTimeout:  6 * time.Second,
+		WriteTimeout: 6 * time.Second,
+		PoolTimeout:  10 * time.Second, // 池内所有连接都忙碌时，等待多久
+		MinIdleConns: 10,
+		PoolSize:     20, // redis client 底层维护了一个连接池
 	})
 	if rdb == nil {
 		return errors.New("nil connection")
