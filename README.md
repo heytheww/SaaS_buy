@@ -2,7 +2,7 @@
 【声明】
 本系统系一个微服务系统，是作为一个大型分布式系统的一部分或称异构子系统而研发的，目前的状态是技术探索落地，追求高效而尽可能地低成本，不追求业务的复杂度。
 
-测试环境：docker desktop，操作系统：centos，不限网络带宽，CPU/内存：2 core / 2 GiB。压力测试程序：Apache JMeter，5000 users(thread)，5 requests/per users。
+测试环境：docker desktop，操作系统：centos，不限网络带宽，CPU/内存：2 core / 2 GiB。压力测试程序：Apache JMeter，10000 users(thread)，5 requests/per users。
 
 ## 用户获知结果耗时
 用户参与抢购，发送请求，得到是否抢购成功的响应。
